@@ -1,0 +1,28 @@
+.DS_Store
+.git
+
+*.pyc
+
+# Python packaging
+dist/
+publish/
+
+###############################
+# User-Specific Project files #
+###############################
+.idea/ant.xml
+.idea/compiler.xml
+.idea/caches
+.idea/dataSources/
+.idea/dataSources.xml
+.idea/dataSources.ids
+.idea/dataSources.local.xml
+.idea/runConfigurations.xml
+.idea/libraries/GOPATH__screenleap_v2_.xml
+.idea/misc.xml
+.idea/tasks.xml
+workspace.xml
+.idea/copyright/
+.idea/scopes/
+.idea/shelf/
+.workspace/

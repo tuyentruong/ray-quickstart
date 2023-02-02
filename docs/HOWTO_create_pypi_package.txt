@@ -1,0 +1,18 @@
+# build the package
+cd ~/git/ray-quickstart
+hatch build
+
+# publish to test.pypi.org
+hatch publish -r test
+
+# publish to pypi.org
+hatch publish
+
+# install from test.pypi.org
+pip install -i https://test.pypi.org/simple/ ray-quickstart
+
+# install from pypi.org
+pip install ray-quickstart
+
+# install locally:
+pip install ~/git/ray-quickstart
