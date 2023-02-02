@@ -1,17 +1,18 @@
 [build-system]
-requires = ['hatchling']
-build-backend = 'hatchling.build'
+requires = ['setuptools >= 62.4.0', 'setuptools_scm[toml] >= 7.0.5']
+build-backend = 'setuptools.build_meta'
 
 [project]
 name = 'ray-quickstart'
 authors = [
     {name='Tuyen Truong', email='tuyen.truong@gmail.com'}
 ]
-description='Starter ML project that allows you to develop on your Mac and train using your PC computer (via Ubuntu WSL)'
+version= '0.1.1'
+description='Starter ML project that allows you to develop on your Mac or PC computer and train using your remote GPU server'
 readme = 'README.md'
 requires-python = '>=3.7'
 dependencies = [
-    'ray~=2.2',
+    'ray',
 ]
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -20,21 +21,21 @@ classifiers = [
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3',
 ]
-dynamic = ['version']
 
 [project.urls]
 'Homepage' = 'https://github.com/tuyentruong/ray_quickstart'
 'Bug Tracker' = 'https://github.com/tuyentruong/ray_quickstart/issues'
 
-[tool]
-
-[tool.hatch.version]
-path = 'src/ray_quickstart/__about__.py'
-
-[tool.hatch.build.targets.sdist]
-exclude = [
-    '/docs'
+[tool.setuptools]
+script-files = [
+    'scripts/ray_start.bat',
+    'scripts/ray_start.sh',
+    'scripts/ray_stop.bat',
+    'scripts/ray_stop.sh',
+    'scripts/ubuntu_start.bat',
+    'scripts/ubuntu_stop.bat',
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ['src/ray_quickstart']
+[tool.setuptools.packages.find]
+where = ['src']
+

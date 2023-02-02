@@ -1,1 +1,1 @@
-from init import initialize_ray
+from init import initialize_ray_with_syncer

@@ -1,18 +1,37 @@
-# build the package
+# Packagee and Distribute Using Setuptools
+
+## Build the package
+cd ~/git/ray-quickstart
+python setup.py sdist bdist_wheel
+
+## Publish to test.pypi.org
+twine upload -r testpypi dist/*
+
+## Publish to pypi.org
+twine upload dist/*
+
+
+# Package and Distribute Using Hatch
+
+## Build the package
 cd ~/git/ray-quickstart
 hatch build
 
-# publish to test.pypi.org
+## Publish to test.pypi.org
 hatch publish -r test
 
-# publish to pypi.org
+## Publish to pypi.org
 hatch publish
 
-# install from test.pypi.org
-pip install -i https://test.pypi.org/simple/ ray-quickstart
 
-# install from pypi.org
-pip install ray-quickstart
+# Installation
 
-# install locally:
-pip install ~/git/ray-quickstart
+# Install from test.pypi.org
+pipenv install -i https://test.pypi.org/simple/ ray-quickstart
+
+# Install from pypi.org
+pipenv install ray-quickstart
+
+# Install locally:
+pipenv install ~/git/ray-quickstart
+

@@ -4,8 +4,10 @@
 *.pyc
 
 # Python packaging
+build/
 dist/
 publish/
+src/ray_quickstart.egg-info/
 
 ###############################
 # User-Specific Project files #
