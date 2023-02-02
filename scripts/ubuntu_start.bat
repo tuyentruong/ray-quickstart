@@ -1,12 +1,22 @@
+echo off
+
 netsh interface portproxy reset
 
-REM Start Ubuntu "nohup sleep 100000 &" to keep the process running
-START /B CMD /C "C:\Windows\system32\wsl.exe -u %USERNAME% -d Ubuntu-22.04 --cd ~/git nohup sleep 100000 &"
+rem Start Ubuntu "nohup sleep 100000 &" to keep the process running
+start /b cmd /c "C:\Windows\system32\wsl.exe -u %USERNAME% -d Ubuntu-22.04 --cd ~/git nohup sleep 100000 &"
 
-FOR /F "tokens=*" %%i IN ('wsl -d Ubuntu-22.04 hostname -I') DO SET IP_ADDRESS=%%i
+set ip_address_string="IPv4 Address"
+for /f "usebackq tokens=2 delims=:" %%i in (`ipconfig ^| findstr /c:%ip_address_string%`) do (
+    set IP_ADDRESS=%%i
+    goto NEXT
+)
 
-netsh interface portproxy set v4tov4 listenport=22 listenaddress=192.168.2.4 connectport=53422 connectaddress=%IP_ADDRESS% protocol=tcp
-netsh interface portproxy set v4tov4 listenport=6380 listenaddress=192.168.2.4 connectport=6380 connectaddress=%IP_ADDRESS% protocol=tcp
-netsh interface portproxy set v4tov4 listenport=8265 listenaddress=192.168.2.4 connectport=8265 connectaddress=%IP_ADDRESS% protocol=tcp
-netsh interface portproxy set v4tov4 listenport=10001 listenaddress=192.168.2.4 connectport=10001 connectaddress=%IP_ADDRESS% protocol=tcp
+:NEXT
+
+for /f "tokens=*" %%i IN ('wsl -d Ubuntu-22.04 hostname -I') do set UBUNTU_IP_ADDRESS=%%i
+
+netsh interface portproxy set v4tov4 listenport=22 listenaddress=%IP_ADDRESS% connectport=53422 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+netsh interface portproxy set v4tov4 listenport=6380 listenaddress=%IP_ADDRESS% connectport=6380 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+netsh interface portproxy set v4tov4 listenport=8265 listenaddress=%IP_ADDRESS% connectport=8265 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+netsh interface portproxy set v4tov4 listenport=10001 listenaddress=%IP_ADDRESS% connectport=10001 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy show all

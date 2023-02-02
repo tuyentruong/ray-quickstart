@@ -1,14 +1,17 @@
-# Packagee and Distribute Using Setuptools
+# Package and Distribute Using Setuptools
 
 ## Build the package
 cd ~/git/ray-quickstart
-python setup.py sdist bdist_wheel
+python -m build
 
 ## Publish to test.pypi.org
-twine upload -r testpypi dist/*
+twine upload --repository testpypi dist/*
 
 ## Publish to pypi.org
 twine upload dist/*
+
+## Clean up build artifacts:
+python setup.py clean
 
 
 # Package and Distribute Using Hatch
@@ -32,6 +35,6 @@ pipenv install -i https://test.pypi.org/simple/ ray-quickstart
 # Install from pypi.org
 pipenv install ray-quickstart
 
-# Install locally:
+# Install locally (no build:
 pipenv install ~/git/ray-quickstart
 

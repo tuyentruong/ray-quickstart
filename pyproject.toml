@@ -7,7 +7,7 @@ name = 'ray-quickstart'
 authors = [
     {name='Tuyen Truong', email='tuyen.truong@gmail.com'}
 ]
-version= '0.1.1'
+version= '0.1.2'
 description='Starter ML project that allows you to develop on your Mac or PC computer and train using your remote GPU server'
 readme = 'README.md'
 requires-python = '>=3.7'
