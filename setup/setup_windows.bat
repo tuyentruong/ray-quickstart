@@ -36,5 +36,4 @@ netsh advfirewall firewall add rule name="Ray Port 6380" dir=in action=allow pro
 netsh advfirewall firewall add rule name="Ray Dashboard Port 8265" dir=in action=allow protocol=TCP localport=8265
 netsh advfirewall firewall add rule name="Ray Client Server Port 10001" dir=in action=allow protocol=TCP localport=10001
 
-:EOF
 endlocal

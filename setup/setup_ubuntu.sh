@@ -4,23 +4,25 @@ set -x
 
 sudo apt update -y
 sudo apt install python3 python3-pip -y
-sudo apt install pipenv -y
 curl https://repo.anaconda.com/archive/Anaconda3-2021.11-Linux-x86_64.sh --output ~/anaconda.sh
 chmod +x ~/anaconda.sh
 ~/anaconda.sh -b
 rm ~/anaconda.sh
-conda init bash
+~/anaconda3/bin/conda update -n base -c defaults conda -y
+
+~/anaconda3/bin/conda init bash
 
 # clone repos
 mkdir -p ~/git
 cd ~/git
-ssh-keyscan github.com >> ~/.ssh/known_hosts
+ssh-keyscan github.com > ~/.ssh/known_hosts
 git clone https://github.com/tuyentruong/ray-quickstart.git ~/git/ray-quickstart
 
 cd ~/git/ray-quickstart
-conda create -n ray-quickstart python=3.9.12 -y
+~/anaconda3/bin/conda create -n ray-quickstart python=3.9.12 -y
+source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ray-quickstart
-conda install pipenv -y
+~/anaconda3/bin/conda install pipenv -y
 
 # add autoenv
 curl -#fLo- 'https://raw.githubusercontent.com/hyperupcall/autoenv/master/scripts/install.sh' | sh -s -- -y
