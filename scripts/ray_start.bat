@@ -1,4 +1,4 @@
-echo off
+@echo off
 
 set ip_address_string="IPv4 Address"
 for /f "usebackq tokens=2 delims=:" %%i in (`ipconfig ^| findstr /c:%ip_address_string%`) do (
@@ -8,4 +8,4 @@ for /f "usebackq tokens=2 delims=:" %%i in (`ipconfig ^| findstr /c:%ip_address_
 
 :NEXT
 
-C:\Users\tuyen\.virtualenvs\ai-Gt1AetLj\Scripts\ray.exe start --head --node-ip-address %IP_ADDRESS% --port 6380 --ray-client-server-port 10001 --dashboard-host 0.0.0.0 --dashboard-port 8265 --disable-usage-stats
+ray.exe start --head --node-ip-address %IP_ADDRESS% --port 6380 --ray-client-server-port 10001 --dashboard-host 0.0.0.0 --dashboard-port 8265 --disable-usage-stats

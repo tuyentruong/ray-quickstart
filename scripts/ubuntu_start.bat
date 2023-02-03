@@ -15,7 +15,7 @@ for /f "usebackq tokens=2 delims=:" %%i in (`ipconfig ^| findstr /c:%ip_address_
 
 for /f "tokens=*" %%i IN ('wsl -d Ubuntu-22.04 hostname -I') do set UBUNTU_IP_ADDRESS=%%i
 
-netsh interface portproxy set v4tov4 listenport=22 listenaddress=%IP_ADDRESS% connectport=53422 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+netsh interface portproxy set v4tov4 listenport=22 listenaddress=%IP_ADDRESS% connectport=22 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy set v4tov4 listenport=6380 listenaddress=%IP_ADDRESS% connectport=6380 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy set v4tov4 listenport=8265 listenaddress=%IP_ADDRESS% connectport=8265 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy set v4tov4 listenport=10001 listenaddress=%IP_ADDRESS% connectport=10001 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp

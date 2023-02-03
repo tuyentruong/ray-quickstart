@@ -1,3 +1,3 @@
-echo off
+@echo off
 
 ray.exe stop

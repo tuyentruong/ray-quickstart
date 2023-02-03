@@ -1,0 +1,14 @@
+[Unit]
+Description=Starts and stops the Ray cluster
+Requires=network-online.target
+After=network-online.target time-sync.target
+
+[Service]
+Type=simple
+User=USER
+ExecStart=/home/USER/git/ai/scripts/ray_start.sh
+ExecStop=/home/USER/git/ai/scripts/ray_stop.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
