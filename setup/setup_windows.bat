@@ -1,7 +1,7 @@
 setlocal
 @echo off
 
-rem wsl --unregister Ubuntu-22.04
+wsl --unregister Ubuntu-22.04
 wsl --install Ubuntu-22.04
 wsl -u root -d Ubuntu-22.04 -- ls
 
@@ -25,6 +25,17 @@ wsl -u root -d Ubuntu-22.04 -- useradd -s /bin/bash -m %USERNAME%
 wsl -u root -d Ubuntu-22.04 -- passwd -d %USERNAME%
 wsl -u root -d Ubuntu-22.04 -- echo "%USERNAME%    ALL = (ALL) NOPASSWD: ALL" ^> /etc/sudoers.d/%USERNAME%
 wsl -u root -d Ubuntu-22.04 -- chmod 0440 /etc/sudoers.d/%USERNAME%
+
+rem create wsl.conf file
+wsl -u root -d Ubuntu-22.04 -- echo "[boot]" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "systemd=true" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "[interop]" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "appendWindowsPath = false" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "[wsl2]" > /etc/wsl.conf
+wsl -u root -d Ubuntu-22.04 -- echo "vmIdleTimeout=-1" > /etc/wsl.conf
+
 
 cd %~dp0
 wsl -u %USERNAME% ./setup_ubuntu.sh

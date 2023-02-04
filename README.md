@@ -31,10 +31,13 @@ sync the checkpoints from Windows to my Mac computer.
 1. You can get started by either cloning this repository or by installing the ray-quickstart package from PyPI. The former
 is preferred if you want to try out the example project, but the latter is preferred if you want to use this package in
 your own project.
-2. If your computer with the GPU card has Windows installed, you can run `setup\setup_windows.bat` to set up Ubuntu 22.04 
-on your computer. 
 
-    If your computer with the GPU card has Ubuntu installed, you can run `setup/setup_ubuntu.sh` to set it up.
+2. If your GPU-enabled computer has Windows installed, you can run `setup\setup_windows.bat` to set up Ubuntu 22.04 
+on your computer. Some terminal windows will open during the setup process. You can close them once the setup is complete.
+
+If your GPU-enabled computer has Ubuntu installed, you can run `setup/setup_ubuntu.sh` to set it up.
+
+On your Mac, you will need to install grpcio using Conda and then copy it over to your pipenv's site-packages (see `setup/setup_mac.sh`).
 
 ## Setup
 1. Create a YAML configuration file named `ray_config.yaml` in the root directory of your project.

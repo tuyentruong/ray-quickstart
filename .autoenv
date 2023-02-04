@@ -1,1 +1,2 @@
 conda activate ray-quickstart
+#source $(pipenv --venv)/bin/activate

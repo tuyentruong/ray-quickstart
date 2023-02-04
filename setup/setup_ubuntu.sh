@@ -11,6 +11,7 @@ rm ~/anaconda.sh
 ~/anaconda3/bin/conda update -n base -c defaults conda -y
 
 ~/anaconda3/bin/conda init bash
+~/anaconda3/bin/conda config --set auto_activate_base  false
 
 # clone repos
 mkdir -p ~/git
@@ -38,7 +39,7 @@ sudo apt install libx11-dev libatlas-base-dev -y
 sudo apt install libgtk-3-dev libboost-python-dev -y
 
 # install Python packages for ML/AI
-pipenv install --python 3.9.12
+pipenv install --python="/home/$USER/anaconda3/envs/ray-quickstart/bin/python" --site-packages
 
 # install CUDA
 cd ~
@@ -56,7 +57,7 @@ sudo apt-get update -y
 sudo apt-get upgrade -y
 sudo apt-get -y install nvidia-driver-525 nvidia-dkms-525
 
-sudo systemctl enable ray-cluster.service
+sudo systemctl enable --now ray-cluster.service
 
 # setup .bashrc
 if ! grep -Fq "AUTOENV_ASSUME_YES" ~/.bashrc
@@ -69,5 +70,5 @@ then
   echo 'export EDITOR=vim' >> ~/.bashrc
   echo 'export LD_LIBRARY_PATH=/usr/lib/wsl/lib' >> ~/.bashrc
   echo '' >> ~/.bashrc
-  echo 'export PATH=~/.local/share/virtualenvs/ai-lw7wTiLA/bin:~/anaconda3/bin:${PATH}:/usr/lib/wsl/lib' >> ~/.bashrc
+  echo 'export PATH=~/anaconda3/bin:${PATH}:/usr/lib/wsl/lib' >> ~/.bashrc
 fi

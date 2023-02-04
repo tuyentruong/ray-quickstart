@@ -51,7 +51,7 @@ def _do_initialize_ray(src_dir, props, success_callback=None):
     # runtime_env is required for cloudpickle to be able to find modules
     runtime_env = {'working_dir': src_dir}
     #ray.init(local_mode=True)
-    ray_head_hostname_or_ip_address = props['ray_head']['head_hostname_or_ip_address']
+    ray_head_hostname_or_ip_address = props['ray_head']['hostname_or_ip_address']
     ray_head_client_server_port = props['ray_head']['client_server_port']
     ray.init(address=f'ray://{ray_head_hostname_or_ip_address}:{ray_head_client_server_port}', runtime_env=runtime_env)
     if success_callback is not None:

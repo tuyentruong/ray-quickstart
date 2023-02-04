@@ -1,1 +1,2 @@
+#unset VIRTUAL_ENV && deactivate
 conda deactivate
