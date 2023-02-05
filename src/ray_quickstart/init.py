@@ -6,8 +6,8 @@ import shutil
 import subprocess
 
 import ray
-import yaml
 from ray import logger
+import yaml
 
 from ray_quickstart.monkey_patch import monkey_patch_base_trainer_to_enable_syncing_after_training, \
     monkey_patch_trainable_util_to_fix_checkpoint_paths

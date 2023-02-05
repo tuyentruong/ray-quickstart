@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 import os
-from distutils.command.sdist import sdist
 
-from setuptools import setup, Command
+from setuptools import Command, setup
 
 
 class CleanCommand(Command):
