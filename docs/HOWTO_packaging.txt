@@ -36,5 +36,5 @@ pipenv install -i https://test.pypi.org/simple/ ray-quickstart
 pipenv install ray-quickstart
 
 # Install locally (no build:
-pipenv install ~/git/ray-quickstart
+pipenv install ~/git/ray-quickstart --skip-lock
 

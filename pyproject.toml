@@ -7,7 +7,7 @@ name = 'ray-quickstart'
 authors = [
     {name='Tuyen Truong', email='tuyen.truong@gmail.com'}
 ]
-version= '0.1.4'
+version= '0.1.5'
 description='Wrapper around the Ray library to make it easier for you to set up your ML project to use Ray to train/tune your models remotely on a GPU-enabled computer'
 readme = 'README.md'
 requires-python = '>=3.7'

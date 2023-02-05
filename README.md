@@ -44,8 +44,8 @@ If your GPU-enabled computer has Ubuntu installed, you can run `setup/setup_ubun
 
 On your Mac, you will need to install grpcio using Conda and then copy it over to your pipenv's site-packages (see `setup/setup_mac.sh`).
 
-3. After Ubuntu has been installed, you will need to add your public SSH key to ~./ssh/authorized_keys on your Ubuntu instance. 
-
+3. After Ubuntu has been installed, you will need to add your public SSH key to ~/.ssh/authorized_keys on your Ubuntu 
+instance so that your local computer will be able to connect to the Ubuntu instance for training/tuning.
 ## Setup
 1. Create a YAML configuration file named `ray_config.yaml` in the root directory of your project.
 1. Ray QuickStart expects a configuration file named `ray_config.yaml` to be present in the root directory of your project.
