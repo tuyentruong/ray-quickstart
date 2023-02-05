@@ -5,6 +5,7 @@ name = "pypi"
 
 [packages]
 ray = {extras = ["default"], version = "*"}
+torch = "*"
 
 [dev-packages]
 

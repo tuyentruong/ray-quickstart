@@ -48,7 +48,7 @@ class RsyncSyncer(Syncer):
             if remote_dir.startswith('file://'):
                 remote_dir = remote_dir[7:]
             remote_dir = expand_user_home_path(remote_dir, self.driver_user, self.driver_platform)
-            sync_cmd = f'rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" -p {self.driver_ssh_port} {local_dir}/ {self.driver_user}@{self.driver_hostname}:{remote_dir}/'
+            sync_cmd = f'rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p {self.driver_ssh_port}" {local_dir}/ {self.driver_user}@{self.driver_hostname}:{remote_dir}/'
             logger.info(f'syncing from ray worker to local computer: {sync_cmd}')
             try:
                 output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')
@@ -70,7 +70,7 @@ class RsyncSyncer(Syncer):
             if remote_dir.startswith('file://'):
                 remote_dir = remote_dir[7:]
             remote_dir = expand_user_home_path(remote_dir, self.driver_user, self.driver_platform)
-            sync_cmd = f'rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" --delete --ignore-errors -p {self.worker_ssh_port} {remote_dir}/ {self.worker_user}@{self.worker_hostname}:{local_dir}/'
+            sync_cmd = f'rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p {self.worker_ssh_port}" --delete --ignore-errors {remote_dir}/ {self.worker_user}@{self.worker_hostname}:{local_dir}/'
             logger.info(f'syncing from local computer to ray worker: {sync_cmd}')
             try:
                 output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')

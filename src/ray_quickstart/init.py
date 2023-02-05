@@ -19,35 +19,41 @@ def initialize_ray_with_syncer(base_dir, src_dir, config_file_path, success_call
     if not os.path.exists(config_file_path):
         raise FileNotFoundError(f'config file not found at {config_file_path}')
     with open(config_file_path, 'r') as f:
-        props = yaml.safe_load(f)
-    driver_user = props['driver']['user']
-    driver_hostname_or_ip_address = props['driver']['hostname_or_ip_address']
-    driver_ssh_port = props['driver']['ssh_port']
-    worker_user = props['worker']['user']
-    worker_hostname_or_ip_address = props['worker']['hostname_or_ip_address']
-    worker_ssh_port = props['worker']['ssh_port']
+        ray_config = yaml.safe_load(f)
+    driver_user = ray_config['driver']['user']
+    driver_hostname_or_ip_address = ray_config['driver']['hostname_or_ip_address']
+    driver_ssh_port = ray_config['driver']['ssh_port']
+    worker_user = ray_config['worker']['user']
+    worker_hostname_or_ip_address = ray_config['worker']['hostname_or_ip_address']
+    worker_ssh_port = ray_config['worker']['ssh_port']
+    worker_platform = ray_config['worker']['platform']
     syncer = RsyncSyncer(driver_user,
                          driver_hostname_or_ip_address,
                          driver_ssh_port,
                          worker_user,
                          worker_hostname_or_ip_address,
                          worker_ssh_port,
-                         'linux')
+                         worker_platform)
     try:
-        clear_local_trial_results_dir(syncer)
-        _do_initialize_ray(src_dir, props, success_callback)
+        clean_trial_results_dir(syncer)
+        configure_remote_ray_runtime_environment(base_dir,
+                                                 worker_user,
+                                                 worker_hostname_or_ip_address,
+                                                 worker_ssh_port,
+                                     '~/git/ray-quickstart')
+        initialize_ray(src_dir, ray_config, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows():
             with subprocess.Popen(f'{base_dir}/scripts/ray_start.bat') as p:
                 p.wait()
-            _do_initialize_ray(src_dir, props, success_callback)
+            initialize_ray(src_dir, ray_config, success_callback)
             return syncer
         else:
             raise
 
 
-def _do_initialize_ray(src_dir, props, success_callback=None):
+def initialize_ray(src_dir, props, success_callback=None):
     # runtime_env is required for cloudpickle to be able to find modules
     runtime_env = {'working_dir': src_dir}
     #ray.init(local_mode=True)
@@ -58,24 +64,46 @@ def _do_initialize_ray(src_dir, props, success_callback=None):
         success_callback()
 
 
-
 def get_local_trial_results_dir():
     return f'~/ray_results'
 
 
-def clear_local_trial_results_dir(syncer):
-    logger.info('clearing local trial results dir...')
+def clean_trial_results_dir(syncer):
+    logger.info('cleaning local trial results dir...')
     local_trial_results_dir = os.path.expanduser(get_local_trial_results_dir())
     if os.path.exists(local_trial_results_dir):
         delete_dir_contents(local_trial_results_dir)
     else:
         os.makedirs(local_trial_results_dir, exist_ok=True)
     if syncer is not None:
+        logger.info('cleaning remote trial results dir...')
         trial_results_dir = get_local_trial_results_dir()
         syncer.sync_down(trial_results_dir,
                          expand_user_home_path(trial_results_dir,
                                                syncer.worker_user,
                                                syncer.worker_platform))
+
+
+def configure_remote_ray_runtime_environment(base_dir,
+                                             worker_user,
+                                             worker_hostname_or_ip_address,
+                                             worker_ssh_port,
+                                             worker_base_dir):
+    sync_cmd = f'rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --include="configure_ray_runtime_env.sh" --exclude="*" {{{base_dir}/,{base_dir}/config/}} {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
+    logger.info(f'copying runtime environment configuration files to remote Ray runtime: {sync_cmd}')
+    try:
+        output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')
+        logger.info(output)
+    except subprocess.CalledProcessError as e:
+        logger.error(f'error copying runtime environment configuration files to remote Ray runtime: {e}')
+
+    logger.info('configuring remote Ray runtime environment...')
+    configure_cmd = f'ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no -p {worker_ssh_port} {worker_user}@{worker_hostname_or_ip_address} "chmod +x {worker_base_dir}/configure_ray_runtime_env.sh && {worker_base_dir}/configure_ray_runtime_env.sh"'
+    try:
+        output = str(subprocess.check_output(configure_cmd, shell=True)).replace('\\n', '\n')
+        logger.info(output)
+    except subprocess.CalledProcessError as e:
+        logger.error(f'error configuring remote Ray runtime environment: {e}')
 
 
 def delete_dir_contents(dir_path):

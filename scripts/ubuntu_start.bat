@@ -1,5 +1,7 @@
 echo off
 
+wsl --terminate Ubuntu-22.04
+
 netsh interface portproxy reset
 
 rem Start Ubuntu "nohup sleep 100000 &" to keep the process running

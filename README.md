@@ -1,4 +1,4 @@
-This project allows you to set up your machine-learning project so that you can develop locally on your computer and 
+This project allows you to quickly set up your machine-learning project so that you can develop locally on your computer and 
 then train and tune your models remotely on a GPU-enabled computer. The remote training/tuning is implemented using 
 [Ray](https://github.com/ray-project/ray).
 
@@ -14,6 +14,11 @@ inference afterwards.
 Ray was designed to address this inefficiency, but I didn't find it as easy as I would have liked to get it set up for 
 remote training and tuning on another computer. It's possible that they have the functionality already in place, so 
 please let me know if I am reinventing the wheel somewhere.
+
+The quickstart enable three main things:
+1. Sync your Python code to the remote computer.
+2. Uses Ray to perform the distributed training and tuning.
+3. Sync the trained model/checkpoints back to your computer.
 
 Over time, I hope to add additional functionality to allow you to train from a cluster in the cloud once your needs 
 exceed the capabilities of your GPU card.
@@ -39,6 +44,8 @@ If your GPU-enabled computer has Ubuntu installed, you can run `setup/setup_ubun
 
 On your Mac, you will need to install grpcio using Conda and then copy it over to your pipenv's site-packages (see `setup/setup_mac.sh`).
 
+3. After Ubuntu has been installed, you will need to add your public SSH key to ~./ssh/authorized_keys on your Ubuntu instance. 
+
 ## Setup
 1. Create a YAML configuration file named `ray_config.yaml` in the root directory of your project.
 1. Ray QuickStart expects a configuration file named `ray_config.yaml` to be present in the root directory of your project.
@@ -53,3 +60,9 @@ I got stumped on this issue for a while. From https://github.com/microsoft/WSL/i
 
 When I started the Ubuntu WSL instance from the command line and passed in the `--user` flag with the same username as 
 in Windows, then it worked. It is recommended that you start the Ubuntu WSL instance using the `ubuntu_start.sh` script.
+
+**I am getting ModuleNotFoundError: No module named '[module]' when I try to training remotely. How do I fix it?**
+
+You will need to install all your package dependencies to the ray-quickstart project because that is the project used 
+when starting the Ray cluster. Without those packages installed, Ray will fail when trying to export your code to the
+remote machine for training.

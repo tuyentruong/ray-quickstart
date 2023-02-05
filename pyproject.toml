@@ -12,7 +12,7 @@ description='Wrapper around the Ray library to make it easier for you to set up 
 readme = 'README.md'
 requires-python = '>=3.7'
 dependencies = [
-    'ray[default]',
+    'ray[default]', 'torch',
 ]
 classifiers = [
     'Development Status :: 3 - Alpha',
