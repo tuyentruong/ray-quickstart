@@ -21,4 +21,6 @@ netsh interface portproxy set v4tov4 listenport=22 listenaddress=%IP_ADDRESS% co
 netsh interface portproxy set v4tov4 listenport=6380 listenaddress=%IP_ADDRESS% connectport=6380 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy set v4tov4 listenport=8265 listenaddress=%IP_ADDRESS% connectport=8265 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
 netsh interface portproxy set v4tov4 listenport=10001 listenaddress=%IP_ADDRESS% connectport=10001 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+netsh interface portproxy set v4tov4 listenport=63344 listenaddress=%IP_ADDRESS% connectport=63344 connectaddress=%UBUNTU_IP_ADDRESS% protocol=tcp
+
 netsh interface portproxy show all
