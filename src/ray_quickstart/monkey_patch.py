@@ -69,21 +69,6 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
     BaseTrainer.fit = fit
 
 
-def monkey_patch_ray_dataset_for_local_training():
-    """Monkey-patch ray.data.dataset.Dataset to enable local training with the Ray dataset for debugging purposes."""
-    from ray.data.dataset import Dataset
-
-    def __getitem__(self, index):
-        table = ray.get(self._plan._snapshot_blocks._blocks[index])
-        return {table.column_names[i]: table.columns[i][0] for i in range(len(table.columns))}
-
-    def __len__(self):
-        return self.count()
-
-    Dataset.__len__ = __len__
-    Dataset.__getitem__ = __getitem__
-
-
 def monkey_patch_trainable_util_to_fix_checkpoint_paths():
     """Monkey-patch ray.tune.trainable.util.TrainableUtil to fix the checkpoint path in the home directory so the path is correct when transferred from the Ray worker to the driver"""
     from ray.tune.trainable.util import TrainableUtil
