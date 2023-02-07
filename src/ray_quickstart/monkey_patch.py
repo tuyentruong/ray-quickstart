@@ -35,7 +35,6 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
     from ray.air import Result
     from ray.train.base_trainer import TrainingFailedError
     from ray.util import PublicAPI
-    from ray_quickstart.init import sync_checkpoints_back_to_driver
 
     @PublicAPI(stability="beta")
     def fit(self, syncer=None) -> Result:
@@ -57,7 +56,7 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
         result_grid = tuner.fit()
         assert len(result_grid) == 1
         if syncer is not None:
-            sync_checkpoints_back_to_driver(syncer)
+            syncer.sync_checkpoints_back_to_driver()
         try:
             result = result_grid[0]
             if result.error:

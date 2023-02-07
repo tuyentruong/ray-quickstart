@@ -32,8 +32,6 @@ script-files = [
     'scripts/ray_start.sh',
     'scripts/ray_stop.bat',
     'scripts/ray_stop.sh',
-    'scripts/ubuntu_start.bat',
-    'scripts/ubuntu_stop.bat',
 ]
 
 [tool.setuptools.dynamic]

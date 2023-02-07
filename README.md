@@ -1,68 +1,101 @@
-This project allows you to quickly set up your machine-learning project so that you can develop locally on your computer and 
-then train and tune your models remotely on a GPU-enabled computer. The remote training/tuning is implemented using 
-[Ray](https://github.com/ray-project/ray).
+Ray QuickStart allows you to quickly get started with remote training and tuning of your machine-learning
+project using Ray. You can develop locally using your computer and then train and tune your models remotely on a
+GPU-enabled computer. The remote training/tuning is implemented using the [Ray](https://github.com/ray-project/ray) library.
+
 
 ## Why Ray QuickStart?
 
-I think a lot of developers (like me) who are interested in getting started with ML learning are using Macs for their 
-development, but Macs don't have GPUs and MPS devices are still nowhere close to being as fast as GPUS. I ended up 
-buying a GPU card for my Windows computer, but found it cumbersome to develop on my Mac, commit my changes to GitHub, 
-push the changes to my Windows computer, and then run my training and tuning from my Windows computer. In addition, 
-I found myself having to manually save the trained models to the cloud and then download them to my Mac to use them for 
-inference afterwards.
+I recently got a GPU card for my Windows computer to allow me to train my ML models more quickly. I wanted to continue
+developing from my Mac computer, but the process of copying my code and data to my Windows computer, training my models, 
+and then copying the trained models back to my Mac computer was cumbersome. 
 
-Ray was designed to address this inefficiency, but I didn't find it as easy as I would have liked to get it set up for 
-remote training and tuning on another computer. It's possible that they have the functionality already in place, so 
-please let me know if I am reinventing the wheel somewhere.
+I found the Ray library and decided to use it to train my models remotely on my Windows computer after developing it 
+locally on my Mac computer. I ran into some issues getting started with Ray, however, so I created this project to make 
+it easier for others to get started.
 
-The quickstart enable three main things:
-1. Sync your Python code to the remote computer.
-2. Uses Ray to perform the distributed training and tuning.
-3. Sync the trained model/checkpoints back to your computer.
+Ray Quickstart is available as both a [PyPI package](https://pypi.org/project/ray-quickstart/) and as a 
+[GitHub repo](https://github.com/tuyentruong/ray-quickstart). You should install the PyPI package if you want to add 
+remote training and tuning to your own ML project. The GitHub repo includes an example project that you can run to see 
+the Ray QuickStart library in action.
 
-Over time, I hope to add additional functionality to allow you to train from a cluster in the cloud once your needs 
-exceed the capabilities of your GPU card.
 
-## Limitations Addressed By Ray QuickStart
+## What Does Ray QuickStart Do?
 
-This project does the following to make it easier for you to get started with remote training and tuning:
-1. Help you create an Ubuntu 22.04 VM on your Windows computer using WSL2. I need Windows for some of my work and tried
-to run the Ray cluster directly from Windows, but it doesn't look like Ray supports it yet: I ran into issues trying to 
-sync the checkpoints from Windows to my Mac computer.
-2. Note that you will need to start the Ubuntu instanceYou will need to start your Ubuntu instance using wsl
+Ray QuickStart will:
+1. Install the packages in your project's Pipfile on your remote computer without needing to set up an auto-scaling Ray cluster.
+2. Clean up your trials directories before training/tuning starts (optional).
+3. Use Ray to sync your Python project code to your remote computer and train/tune your model there.
+4. Sync the checkpoints from your training/tuning back to your computer.
 
-## Setup
+## Setting Up Your GPU-Enabled Computer
 
-1. You can get started by either cloning this repository or by installing the ray-quickstart package from PyPI. The former
-is preferred if you want to try out the example project, but the latter is preferred if you want to use this package in
-your own project.
+My setup is as follows:
+1. I have a Mac computer that I use for development.
+2. I have a Windows 11 computer with a GPU card installed that I want to use for trainging/tuning.
 
-2. If your GPU-enabled computer has Windows installed, you can run `setup\setup_windows.bat` to set up Ubuntu 22.04 
-on your computer. Some terminal windows will open during the setup process. You can close them once the setup is complete.
+I decided to set up my Ray cluster on an Ubuntu instance on my Windows computer using WSL2. I originally tried to
+set up a Ray cluster on my Windows computer, but I ran into some path issues while trying to sync the checkpoints. 
 
-If your GPU-enabled computer has Ubuntu installed, you can run `setup/setup_ubuntu.sh` to set it up.
+To set up Ubuntu on your Windows computer, you can run `setup\setup_windows.bat` found in GitHub repo. This will create 
+an Ubuntu 22.04 instance on your Windows computer and configure it with a Ray cluster. It will also open up the SSH port 
+and the ports used by Ray in your Windows firewall. A terminal window will open during the setup process. You can ignore 
+any errors that the window shows and close it once setup has completed.
 
-On your Mac, you will need to install grpcio using Conda and then copy it over to your pipenv's site-packages (see `setup/setup_mac.sh`).
+Once the Ubuntu instance has been set up, you will need to start it. It is recommended that you start the Ubuntu instance
+using the `scripts\ubuntu_start.bat` script. The script will ensure that port forwarding has been set up correctly so
+that you will be able to communicate with the Ray cluster on the Ubuntu instance from your local computer.
 
-3. After Ubuntu has been installed, you will need to add your public SSH key to ~/.ssh/authorized_keys on your Ubuntu 
-instance so that your local computer will be able to connect to the Ubuntu instance for training/tuning.
-## Setup
-1. Create a YAML configuration file named `ray_config.yaml` in the root directory of your project.
-1. Ray QuickStart expects a configuration file named `ray_config.yaml` to be present in the root directory of your project.
+Finally, you will need to add your public SSH key to ~/.ssh/authorized_keys on your Ubuntu instance so that your local
+computer will be able to connect to the Ubuntu instance to configure your runtime environment and sync the checkpoints
+using rsync.
+
+If your GPU-enabled computer has Linux installed, you can take a look at `setup\setup_ubuntu.sh` for the setup that needs
+to be done to install and configure Ray cluster. The setup script was written for Ubuntu, but hopefully it will be easy 
+to adapt for other distros.
+
+
+## Setting Up Your Local Computer
+
+1. Create a YAML configuration file named `ray_config.yaml` in your project. The file should contain the following
+   information:
+
+```yaml
+driver:
+  user: 'tuyen' # Your username on your local computer
+  private_key_file: '~/.ssh/id_rsa' # The private key file that will be used to connect to the remote computer
+
+ray_head:
+  hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
+  client_server_port: 10001 # The port that will be used to communicate with the Ray cluster
+
+worker:
+  user: 'tuyen' # The user that will be used to connect to the remote computer using SSH
+  hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
+  ssh_port: 22 # The port that will be used to connect to the remote computer using SSH
+  platform: 'linux' # The platform that the remote computer is running on (used for path conversion)
+```
+
+2. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
+   The call will return a syncer object.
+
+3. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
+   to train your model. The syncer object will be used to sync your checkpoints back to your local computer after training.
+
 
 ## Troubleshooting
 
 **When I connect to the Ubuntu WSL instance, it says that the GPU is not available. What can I do to fix this?** 
    
-I got stumped on this issue for a while. From https://github.com/microsoft/WSL/issues/9185, I discovered the cause:
+I got stumped on this issue for a while. From https://github.com/microsoft/WSL/issues/9185, it seems to be user permission
+issue:
    
 > There is an issue when nvidia-smi doesn't work when one instance is launched as Administrator and another as a non-Administrator.
 
-When I started the Ubuntu WSL instance from the command line and passed in the `--user` flag with the same username as 
-in Windows, then it worked. It is recommended that you start the Ubuntu WSL instance using the `ubuntu_start.sh` script.
+It started working when I started the Ubuntu WSL instance from the command line and passed in the `--user` flag with the same username as 
+my Windows's username. It is recommended that you start the Ubuntu WSL instance using the `scripts\ubuntu_start.bat` script
+to avoid this issue.
 
-**I am getting ModuleNotFoundError: No module named '[module]' when I try to training remotely. How do I fix it?**
 
-You will need to install all your package dependencies to the ray-quickstart project because that is the project used 
-when starting the Ray cluster. Without those packages installed, Ray will fail when trying to export your code to the
-remote machine for training.
+## Future Directions
+
+1. Add support for training on a cluster in the cloud.

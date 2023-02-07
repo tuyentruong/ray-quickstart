@@ -18,27 +18,35 @@ from ray_quickstart.util.platform import expand_user_home_path
 
 def initialize_ray_with_syncer(base_dir,
                                src_dir,
-                               config,
                                ray_config_file_path,
+                               trial_results_dir,
                                success_callback=None,
                                clean_trial_results_dir_at_start=True):
-    if ray.is_initialized():
-        return
+    """
+    :param base_dir: The base directory of your project.
+    :param src_dir: The base directory for your Python source code
+    :param ray_config_file_path: The path to the Ray config file.
+    :param trial_results_dir The directory where the Ray trial results are stored.
+    :param success_callback: Callback to call when Ray is successfully initialized.
+    :param clean_trial_results_dir_at_start: Whether to clean the trial results directory on your local computer and the remote computer at the start of the experiment.
+    :return: an RsyncSyncer object that needs to be called after training to sync the checkpoints from the remote computer to the local computer.
+    """
     ray_config = load_ray_config(ray_config_file_path)
     driver_user = ray_config['driver']['user']
-    driver_hostname_or_ip_address = ray_config['driver']['hostname_or_ip_address']
     driver_private_key_file = ray_config['driver']['private_key_file']
     worker_user = ray_config['worker']['user']
     worker_hostname_or_ip_address = ray_config['worker']['hostname_or_ip_address']
     worker_ssh_port = ray_config['worker']['ssh_port']
     worker_platform = ray_config['worker']['platform']
     syncer = RsyncSyncer(driver_user,
-                         driver_hostname_or_ip_address,
                          driver_private_key_file,
                          worker_user,
                          worker_hostname_or_ip_address,
                          worker_ssh_port,
-                         worker_platform)
+                         worker_platform,
+                         trial_results_dir)
+    if ray.is_initialized():
+        return syncer
     monkey_patch_base_trainer_to_enable_syncing_after_training()
     try:
         if clean_trial_results_dir_at_start:
@@ -49,22 +57,22 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_hostname_or_ip_address,
                                                  worker_ssh_port,
                                                  '~/git/ray-quickstart')
-        initialize_ray(src_dir, config, ray_config_file_path, ray_config, success_callback)
+        initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows():
             with subprocess.Popen(f'{base_dir}/scripts/ray_start.bat') as p:
                 p.wait()
-            initialize_ray(src_dir, config, ray_config_file_path, ray_config, success_callback)
+            initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
             return syncer
         else:
             raise
 
 
-def initialize_ray(src_dir, config, ray_config_file_path, ray_config=None, success_callback=None):
+def initialize_ray(src_dir, ray_config_file_path, ray_config=None, success_callback=None):
     if ray.is_initialized():
         return
-    if config.run_on_ray_cluster and ray_config is None:
+    if ray_config is None:
         ray_config = load_ray_config(ray_config_file_path)
     # runtime_env is required for cloudpickle to be able to find modules
     runtime_env = {'working_dir': src_dir}
@@ -84,24 +92,16 @@ def load_ray_config(config_file_path):
     return ray_config
 
 
-def get_local_trial_results_dir():
-    return f'~/ray_results'
-
-
-def clean_trial_results_dir(syncer):
+def clean_trial_results_dir(syncer, trial_results_dir):
     logger.info('cleaning local trial results dir...')
-    local_trial_results_dir = os.path.expanduser(get_local_trial_results_dir())
-    if os.path.exists(local_trial_results_dir):
-        delete_dir_contents(local_trial_results_dir)
+    trial_results_dir = os.path.expanduser(trial_results_dir)
+    if os.path.exists(trial_results_dir):
+        delete_dir_contents(trial_results_dir)
     else:
-        os.makedirs(local_trial_results_dir, exist_ok=True)
+        os.makedirs(trial_results_dir, exist_ok=True)
     if syncer is not None:
         logger.info('cleaning ray worker trial results dir...')
-        trial_results_dir = get_local_trial_results_dir()
-        syncer.sync_from_driver_to_ray_worker(trial_results_dir,
-                                              expand_user_home_path(trial_results_dir,
-                                              syncer.worker_user,
-                                              syncer.worker_platform))
+        syncer.sync_from_driver_to_ray_worker()
 
 
 def configure_remote_ray_runtime_environment(base_dir,
@@ -134,11 +134,3 @@ def delete_dir_contents(dir_path):
             os.unlink(file_path)
         elif os.path.isdir(file_path):
             shutil.rmtree(file_path, ignore_errors=True)
-
-
-def sync_checkpoints_back_to_driver(syncer):
-    trial_results_dir = get_local_trial_results_dir()
-    syncer.sync_from_ray_worker_to_driver(expand_user_home_path(trial_results_dir,
-                                                                syncer.worker_user,
-                                                                syncer.worker_platform),
-                                          trial_results_dir)

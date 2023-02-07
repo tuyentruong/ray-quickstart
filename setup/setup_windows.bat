@@ -1,6 +1,7 @@
 setlocal
 @echo off
 
+rem install the Ubuntu distribution
 wsl --unregister Ubuntu-22.04
 wsl --install Ubuntu-22.04
 wsl -u root -d Ubuntu-22.04 -- ls
@@ -20,6 +21,8 @@ if %ERRORLEVEL% == 0 (
 :ubuntu_started
 wsl --terminate Ubuntu-22.04
 
+echo Setting up the Ubuntu instance...
+
 rem enable password-less sudo
 wsl -u root -d Ubuntu-22.04 -- useradd -s /bin/bash -m %USERNAME%
 wsl -u root -d Ubuntu-22.04 -- passwd -d %USERNAME%
@@ -36,13 +39,17 @@ wsl -u root -d Ubuntu-22.04 -- echo "" > /etc/wsl.conf
 wsl -u root -d Ubuntu-22.04 -- echo "[wsl2]" > /etc/wsl.conf
 wsl -u root -d Ubuntu-22.04 -- echo "vmIdleTimeout=-1" > /etc/wsl.conf
 
-
 cd %~dp0
 wsl -u %USERNAME% ./setup_ubuntu.sh
+echo Setup of the Ubuntu instance has completed.
 
+echo Stopping the Ubuntu instance...
+wsl --terminate Ubuntu-22.04
+
+echo Opening the SSH port in the Windows Defender firewall to allow for rsync'ing between your local computer and the Ray worker...
 netsh advfirewall firewall add rule name="SSH Port 22" dir=in action=allow protocol=TCP localport=22
 
-rem Allow Ray ports through Windows Firewall:
+echo Opening the Ray ports in the Windows Defender firewall so that your computer can communicate with Ray...
 netsh advfirewall firewall add rule name="Ray Port 6380" dir=in action=allow protocol=TCP localport=6380
 netsh advfirewall firewall add rule name="Ray Dashboard Port 8265" dir=in action=allow protocol=TCP localport=8265
 netsh advfirewall firewall add rule name="Ray Client Server Port 10001" dir=in action=allow protocol=TCP localport=10001
