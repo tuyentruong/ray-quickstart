@@ -9,23 +9,23 @@ I recently got a GPU card for my Windows computer to allow me to train my ML mod
 developing from my Mac computer, but the process of copying my code and data to my Windows computer, training my models, 
 and then copying the trained models back to my Mac computer was cumbersome. 
 
-I found the Ray library and decided to use it to train my models remotely on my Windows computer after developing it 
-locally on my Mac computer. I ran into some issues getting started with Ray, however, so I created this project to make 
-it easier for others to get started.
+I found the Ray library and thought it could be a great solution to my problem of having to manually copy my code, data,
+and models to my Windows computer for training and tuning. I ran into some issues getting started with Ray, however, so 
+I created this project to make it easier for others to get started.
 
 Ray Quickstart is available as both a [PyPI package](https://pypi.org/project/ray-quickstart/) and as a 
 [GitHub repo](https://github.com/tuyentruong/ray-quickstart). You should install the PyPI package if you want to add 
-remote training and tuning to your own ML project. The GitHub repo includes an example project that you can run to see 
-the Ray QuickStart library in action.
+remote training and tuning to your own ML project. The GitHub repo includes an example project that allows you to try 
+out remote training on your computers.
 
 
 ## What Does Ray QuickStart Do?
 
 Ray QuickStart will:
-1. Install the packages in your project's Pipfile on your remote computer without needing to set up an auto-scaling Ray cluster.
-2. Clean up your trials directories before training/tuning starts (optional).
+1. Install the packages in your project's Pipfile on your remote computer without needing to set up an auto-scaling Ray cluster first.
+2. Clean up your trials directories before training/tuning starts *(optional)*.
 3. Use Ray to sync your Python project code to your remote computer and train/tune your model there.
-4. Sync the checkpoints from your training/tuning back to your computer.
+4. Sync the checkpoints from your training/tuning back to your computer, so you can use them for inference.
 
 ## Setting Up Your GPU-Enabled Computer
 
@@ -34,12 +34,13 @@ My setup is as follows:
 2. I have a Windows 11 computer with a GPU card installed that I want to use for trainging/tuning.
 
 I decided to set up my Ray cluster on an Ubuntu instance on my Windows computer using WSL2. I originally tried to
-set up a Ray cluster on my Windows computer, but I ran into some path issues while trying to sync the checkpoints. 
+set up a Ray cluster directly on my Windows computer, but I ran into some path issues while trying to sync the checkpoints. 
+I don't think Ray fully supports Windows yet, so I thought setting it up on Ubuntu would be a safer bet.
 
-To set up Ubuntu on your Windows computer, you can run `setup\setup_windows.bat` found in GitHub repo. This will create 
-an Ubuntu 22.04 instance on your Windows computer and configure it with a Ray cluster. It will also open up the SSH port 
-and the ports used by Ray in your Windows firewall. A terminal window will open during the setup process. You can ignore 
-any errors that the window shows and close it once setup has completed.
+To set up Ubuntu on your Windows computer, you can run the `setup\setup_windows.bat` script found in GitHub repo. The 
+script will create an Ubuntu 22.04 instance on your Windows computer and configure it with a Ray cluster. It will also 
+open up the SSH port and the ports used by Ray in your Windows firewall. A terminal window will open during the setup 
+process. You can ignore any errors that the window shows and close it once setup has completed.
 
 Once the Ubuntu instance has been set up, you will need to start it. It is recommended that you start the Ubuntu instance
 using the `scripts\ubuntu_start.bat` script. The script will ensure that port forwarding has been set up correctly so
