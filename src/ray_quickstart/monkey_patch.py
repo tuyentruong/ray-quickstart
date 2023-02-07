@@ -1,7 +1,7 @@
 import os
 import sys
 
-import ray
+import numpy as np
 from ray import logger
 
 
@@ -67,6 +67,20 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
         return result
 
     BaseTrainer.fit = fit
+
+
+def monkey_patch_huggingface_utils_to_process_datasets_for_gpt2():
+    """Monkey-patch huggingface.utils to convert the NumPy arrays into labelled examples for GPT2 training"""
+    from ray.train.huggingface._huggingface_utils import RayDatasetHFIterable
+
+    def __iter__(self):
+        for row in self.generate_examples_fn(**self.kwargs):
+            example = (0, {'input_ids': row[0:len(row)-1].astype(np.int64),
+                           'labels': row[1:len(row)].astype(np.int64)}
+                       )
+            yield example
+
+    RayDatasetHFIterable.__iter__ = __iter__
 
 
 def monkey_patch_trainable_util_to_fix_checkpoint_paths():
