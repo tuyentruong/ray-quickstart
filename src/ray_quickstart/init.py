@@ -18,15 +18,13 @@ from ray_quickstart.util.platform import expand_user_home_path
 
 def initialize_ray_with_syncer(base_dir,
                                src_dir,
-                               config_file_path,
+                               config,
+                               ray_config_file_path,
                                success_callback=None,
                                clean_trial_results_dir_at_start=True):
     if ray.is_initialized():
         return
-    if not os.path.exists(config_file_path):
-        raise FileNotFoundError(f'config file not found at {config_file_path}')
-    with open(config_file_path, 'r') as f:
-        ray_config = yaml.safe_load(f)
+    ray_config = load_ray_config(ray_config_file_path)
     driver_user = ray_config['driver']['user']
     driver_hostname_or_ip_address = ray_config['driver']['hostname_or_ip_address']
     driver_private_key_file = ray_config['driver']['private_key_file']
@@ -51,28 +49,39 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_hostname_or_ip_address,
                                                  worker_ssh_port,
                                                  '~/git/ray-quickstart')
-        initialize_ray(src_dir, ray_config, success_callback)
+        initialize_ray(src_dir, config, ray_config_file_path, ray_config, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows():
             with subprocess.Popen(f'{base_dir}/scripts/ray_start.bat') as p:
                 p.wait()
-            initialize_ray(src_dir, ray_config, success_callback)
+            initialize_ray(src_dir, config, ray_config_file_path, ray_config, success_callback)
             return syncer
         else:
             raise
 
 
-def initialize_ray(src_dir, props, success_callback=None):
+def initialize_ray(src_dir, config, ray_config_file_path, ray_config=None, success_callback=None):
+    if ray.is_initialized():
+        return
+    if config.run_on_ray_cluster and ray_config is None:
+        ray_config = load_ray_config(ray_config_file_path)
     # runtime_env is required for cloudpickle to be able to find modules
     runtime_env = {'working_dir': src_dir}
-    #ray.init(local_mode=True)
-    ray_head_hostname_or_ip_address = props['ray_head']['hostname_or_ip_address']
-    ray_head_client_server_port = props['ray_head']['client_server_port']
+    ray_head_hostname_or_ip_address = ray_config['ray_head']['hostname_or_ip_address']
+    ray_head_client_server_port = ray_config['ray_head']['client_server_port']
     ray.init(address=f'ray://{ray_head_hostname_or_ip_address}:{ray_head_client_server_port}', runtime_env=runtime_env)
     monkey_patch_trainable_util_to_fix_checkpoint_paths()
     if success_callback is not None:
         success_callback()
+
+
+def load_ray_config(config_file_path):
+    if not os.path.exists(config_file_path):
+        raise FileNotFoundError(f'config file not found at {config_file_path}')
+    with open(config_file_path, 'r') as f:
+        ray_config = yaml.safe_load(f)
+    return ray_config
 
 
 def get_local_trial_results_dir():
