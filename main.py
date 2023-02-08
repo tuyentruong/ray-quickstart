@@ -27,14 +27,14 @@ def train_model(storage_manager):
     log.info('training GPT2 model on Shakespeare corpus...')
     model = GPT2(storage_manager, 'shakespeare_char', 'text-generation')
     storage_manager.clean_for_training()
-    train(GPT2TrainerInitializer(storage_manager, model), config)
+    train(GPT2TrainerInitializer(storage_manager, model))
 
 
 def tune_model_hyperparameters(storage_manager):
     log.info('searching for best hyperparameters for GPT2 model trained on Shakespeare corpus...')
     storage_manager.clean_for_training()
     model = GPT2(storage_manager, 'gpt2', 'text-generation')
-    tune_hyperparameters(GPT2TrainerInitializer(storage_manager, model), config)
+    tune_hyperparameters(GPT2TrainerInitializer(storage_manager, model))
 
 
 def main(pipeline):

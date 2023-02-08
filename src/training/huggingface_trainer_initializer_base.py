@@ -5,7 +5,7 @@ from ray.train.torch import TorchConfig
 import torch
 from transformers import Trainer, TrainingArguments, WEIGHTS_NAME
 
-from config import RUNS_DIR, config
+from config import RUNS_DIR
 from log import LOGS_DIR, log
 from training.trainer_initializer_base import TrainerInitializerBase
 from ray_quickstart.util import platform
@@ -55,7 +55,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
                                  'compute_metrics': self.compute_metrics_init()},
             torch_config=TorchConfig(backend='gloo'),
             run_config=RunConfig(name=model.model_name,
-                                 local_dir=config.trial_results_dir,
+                                 local_dir=self.config.trial_results_dir,
                                  checkpoint_config=CheckpointConfig(num_to_keep=3),
                                  log_to_file=f'{model.model_name}.log')
         )
@@ -84,7 +84,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             load_best_model_at_end=args.load_best_model_at_end,
             optim=args.optim,
             #max_steps=5,
-            #no_cuda=True,
+            no_cuda=self.config.force_cpu,
             use_mps_device=args.use_mps_device,
             disable_tqdm=args.disable_tqdm,
         )
@@ -100,7 +100,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             compute_metrics=compute_metrics
         )
 
-    def update_model_with_best_checkpoint(self, model, config, checkpoints, default_eval_metric):
+    def update_model_with_best_checkpoint(self, model, checkpoints, default_eval_metric):
         if checkpoints is None or len(checkpoints) == 0:
             return
         best_checkpoint_index = None
@@ -122,6 +122,6 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         log.info(f'Best checkpoint {eval_metric}: {best_checkpoint_value}')
 
         checkpoint_path = best_checkpoint.uri[7:]
-        state_dict = torch.load(f'{checkpoint_path}/{WEIGHTS_NAME}', map_location=config.device_type)
+        state_dict = torch.load(f'{checkpoint_path}/{WEIGHTS_NAME}', map_location=self.config.device_type)
         model.load_state_dict(state_dict)
         model.save_model()

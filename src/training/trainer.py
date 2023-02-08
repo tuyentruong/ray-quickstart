@@ -12,17 +12,17 @@ from ray_quickstart import initialize_ray
 from ray_quickstart.util.platform import get_cpu_device_count
 
 
-def train(trainer_initializer, config):
+def train(trainer_initializer):
     model = trainer_initializer.model
     model.load_or_create_model()
     model.is_training = True
     log.info(f'training {model.model_name} model...')
     train_dataset, eval_dataset = trainer_initializer.get_train_and_eval_datasets(model)
-    if config.get_run_on_ray_cluster():
+    if trainer_initializer.config.get_run_on_ray_cluster():
         syncer = initialize_ray_with_syncer(BASE_DIR,
                                             SRC_DIR,
                                             f'{CONFIG_DIR}/ray_config.yaml',
-                                            config.trial_results_dir)
+                                            trainer_initializer.config.trial_results_dir)
         log.info('training using ray cluster...')
         ray_train_dataset = trainer_initializer.convert_to_ray_dataset(train_dataset)
         ray_eval_dataset = trainer_initializer.convert_to_ray_dataset(eval_dataset)
@@ -38,7 +38,8 @@ def train(trainer_initializer, config):
         if checkpoint is None:
             log.info('no best checkpoint found after training using ray cluster')
         else:
-            trainer_initializer.update_model_with_best_checkpoint(model, config, result.best_checkpoints, args.metric_for_best_model)
+            trainer_initializer.update_model_with_best_checkpoint(model, result.best_checkpoints,
+                                                                  args.metric_for_best_model)
     else:
         log.info('training using local computer...')
         model.set_train_mode()
@@ -57,7 +58,7 @@ def train(trainer_initializer, config):
     return model
 
 
-def tune_hyperparameters(trainer_initializer, config):
+def tune_hyperparameters(trainer_initializer):
     initialize_ray(SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml')
     model = trainer_initializer.model_init()
     evaluation_strategy = 'epoch' # 'no', 'steps', or 'epoch'

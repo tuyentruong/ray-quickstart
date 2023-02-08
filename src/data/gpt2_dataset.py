@@ -4,6 +4,7 @@ Dataset for use with GPT2 model.
 import numpy as np
 from torch.utils.data import Dataset
 
+from config import config
 from log import log
 
 
@@ -32,6 +33,8 @@ class GPT2Dataset(Dataset):
         return f'{self.model.storage_manager.get_data_dir()}/{self.model.model_name}/{self.dataset_name}.bin'
 
     def __len__(self):
+        if config.truncate_dataset_to_size is not None:
+            return config.truncate_dataset_to_size
         return self.get_num_examples()
 
     def __getitem__(self, index):

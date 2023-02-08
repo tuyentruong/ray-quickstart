@@ -11,6 +11,8 @@ conda create -n ray-quickstart python=3.9.12 -y
 source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
 conda activate ray-quickstart
 
+conda env config vars set PIPENV_PIPFILE=~/git/ray-quickstart/Pipfile.mac
+
 conda install pipenv -y
 
 # install conda version to get version of grpc that works with Macs

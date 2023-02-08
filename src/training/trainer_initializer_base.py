@@ -61,5 +61,5 @@ class TrainerInitializerBase(ABC):
         raise NotImplementedError('need to implement trainer_init_per_worker()')
 
     @abstractmethod
-    def update_model_with_best_checkpoint(self, model, config, checkpoints, default_eval_metric):
+    def update_model_with_best_checkpoint(self, model, checkpoints, default_eval_metric):
         raise NotImplementedError('need to implement trainer_init()')

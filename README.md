@@ -108,6 +108,7 @@ could try training it using my Ray QuickStart setup. I didn't port his GPT2 mode
 GPT2 model instead. The `train.bin` and `val.bin` are the pre-processed data files in binary format that were generated 
 from his nanoGPT repo.
 
+You can configure the project from `src/config/__init__.py`.
 
 ## FAQ
 
