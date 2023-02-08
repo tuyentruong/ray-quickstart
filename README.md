@@ -22,7 +22,7 @@ out remote training on your computers.
 ## What Does Ray QuickStart Do?
 
 Ray QuickStart will:
-1. Install the packages in your project's Pipfile on your remote computer without needing to set up an auto-scaling Ray cluster first.
+1. Install the packages in your project's Pipfile on your remote computer without needing to set up a Ray cluster environment first.
 2. Clean up your trials directories before training/tuning starts *(optional)*.
 3. Use Ray to sync your Python project code to your remote computer and train/tune your model there.
 4. Sync the checkpoints from your training/tuning back to your computer, so you can use them for inference.
@@ -96,6 +96,17 @@ to adapt for other distros.
    ```
    trainer.fit(syncer)
    ```
+
+
+## Example Project
+
+The example project in this repo is taken from Andrej Karpathy's great [nanoGPT](https://github.com/karpathy/nanoGPT) repo.
+I have been looking at his repo while watching his corresponding YouTube video 
+[Let's build GPT: from scratch, in code, spelled out](https://www.youtube.com/watch?v=kCc8FmEb1nY&t=5419s). His repo includes
+a smaller GPT2 character-based model that you can train using text from Shakespeare. I ported the example so that I 
+could try training it using my Ray QuickStart setup. I didn't port his GPT2 model over, though, but used the HuggingFace 
+GPT2 model instead. The `train.bin` and `val.bin` are the pre-processed data files in binary format that were generated 
+from his nanoGPT repo.
 
 
 ## FAQ
