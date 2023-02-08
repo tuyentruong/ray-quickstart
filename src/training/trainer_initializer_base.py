@@ -2,6 +2,7 @@
 Base class for trainer initializers
 """
 from abc import ABC, abstractmethod
+
 import ray
 
 from data.dataset_util import split_dataset_for_classification

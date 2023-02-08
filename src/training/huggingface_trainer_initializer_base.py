@@ -1,4 +1,5 @@
 from abc import ABC
+
 from ray.air import CheckpointConfig, RunConfig
 from ray.train.huggingface import HuggingFaceTrainer
 from ray.train.torch import TorchConfig
@@ -7,8 +8,8 @@ from transformers import Trainer, TrainingArguments, WEIGHTS_NAME
 
 from config import RUNS_DIR
 from log import LOGS_DIR, log
-from training.trainer_initializer_base import TrainerInitializerBase
 from ray_quickstart.util import platform
+from training.trainer_initializer_base import TrainerInitializerBase
 
 
 class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):

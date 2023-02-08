@@ -2,11 +2,11 @@
 Base for ML models
 """
 from abc import abstractmethod
-import numpy as np
 import os
+from typing import final
+
 import torch
 from torch.nn import Module
-from typing import final
 import yaml
 
 from config import config

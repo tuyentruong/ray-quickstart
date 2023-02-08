@@ -4,7 +4,6 @@ Runs the specified pipeline for the example Ray QuickStart project using the def
 """
 import sys
 
-from config import config
 from data.storage_manager import StorageManager
 from log import log
 from models.gpt2 import GPT2
