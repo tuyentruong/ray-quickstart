@@ -116,19 +116,20 @@ def configure_remote_ray_runtime_environment(base_dir,
                                              worker_platform,
                                              worker_setup_commands):
     worker_base_dir = expand_user_home_path(base_dir, worker_user, worker_platform)
-    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --include="configure_ray_runtime_env.sh" --exclude="*" {{{base_dir}/,{base_dir}/scripts/}} {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
-    logger.info(f'copying runtime environment configuration files to remote Ray runtime: {sync_cmd}')
+    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --exclude="*" {base_dir}/ {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
+    logger.info(f'copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}"')
     try:
         output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')
         logger.info(output)
     except subprocess.CalledProcessError as e:
-        logger.error(f'error copying runtime environment configuration files to remote Ray runtime: {e}')
+        logger.error(f'error copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}": {e}')
 
     if worker_setup_commands is not None and len(worker_setup_commands) > 0:
         setup_commands = ' && '.join(worker_setup_commands)
         logger.info('configuring remote Ray runtime environment...')
         configure_cmd = f'ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port} {worker_user}@{worker_hostname_or_ip_address} "{setup_commands}"'
         try:
+            logger.info(f'configuring remote Ray runtime environment with command "{setup_commands}"')
             output = str(subprocess.check_output(configure_cmd, shell=True)).replace('\\n', '\n')
             logger.info(output)
         except subprocess.CalledProcessError as e:
