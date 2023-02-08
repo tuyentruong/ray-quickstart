@@ -8,6 +8,7 @@
       <excludeFolder url="file://$MODULE_DIR$/publish" />
       <excludeFolder url="file://$MODULE_DIR$/src/ray_quickstart.egg-info" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
     <orderEntry type="jdk" jdkName="Pipenv (ray-quickstart)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

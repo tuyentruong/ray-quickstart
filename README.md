@@ -74,22 +74,13 @@ to adapt for other distros.
      hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
      ssh_port: 22 # The port that will be used to connect to the remote computer using SSH
      platform: 'linux' # The platform that the remote computer is running on (used for path conversion)
+     setup_commands: # The commands that will be run on the remote computer to set up the runtime environment
+       - source ~/anaconda3/etc/profile.d/conda.sh
+       - conda activate ray-quickstart
+       - pipenv install --skip-lock
    ```
    
-2. Create a bash script file called `configure_ray_runtime_env.sh` and put it in the `scripts` directory of your project.
-   The script will be run on the Ray worker working directory on the remote computer to configure the runtime environment
-   before running your code to perform training/tuning. The script should install your project's dependencies. Here is 
-   the script that I use for my example project (which is configured to use conda and pipenv):
-
-    ```bash
-    #!/bin/bash
-    
-    source ~/anaconda3/etc/profile.d/conda.sh
-    conda activate ray-quickstart
-    pipenv install --skip-lock
-    ```
-
-3. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
+2. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
    The call will return a syncer object:
    
    ```
@@ -99,12 +90,33 @@ to adapt for other distros.
                                        '~/ray-results')
    ```
 
-4. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
+3. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
    to train your model. The syncer object will be used to sync your checkpoints back to your local computer after training:
 
    ```
    trainer.fit(syncer)
    ```
+
+
+## FAQ
+
+**Why didn't you use Ray's default syncer?**
+
+It didn't work for me when I tried it with their `ray.train.huggingface.HuggingFaceTrainer` class. I believe their
+HuggingFace trainer only supports sync'ing to cloud storage, but I wanted to have the sync'ing to occur directly between
+my local and remote computer.
+
+**Why didn't you implement a custom `ray.tune.sync.Syncer` to perform the sync'ing?**
+
+I did that originally, but sync'ing the checkpoints back to my local computer required that the Ray worker be able to 
+SSH into my local computer. I didn't want you to have to install an SSH key on the remote computer that would give the
+computer SSH access to your local computer, so I reimplemented it so that your local computer connects to the remote 
+computer at the end of training/tuning to retrieve the checkpoints.
+
+**Why didn't you use Ray's cluster environment to set up your project dependencies on your Ray worker?**
+
+I hadn't gotten around to configuring a Ray cluster yet and I wanted needed something lightweight that didn't require me 
+to modify my Ray instance once I had it up and running.
 
 
 ## Troubleshooting
