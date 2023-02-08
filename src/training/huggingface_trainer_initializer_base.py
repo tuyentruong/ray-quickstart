@@ -70,14 +70,14 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             seed=args.seed,
             data_seed=args.seed,
             remove_unused_columns=args.remove_unused_columns,
-            output_dir=f'{self.model_name}',
+            output_dir=args.output_dir,
             overwrite_output_dir=args.overwrite_output_dir,
             learning_rate=args.learning_rate,
             per_device_train_batch_size=args.per_device_train_batch_size,
             per_device_eval_batch_size=args.per_device_eval_batch_size,
             num_train_epochs=args.num_train_epochs,
             weight_decay=args.weight_decay,
-            logging_dir=f'{LOGS_DIR}/tensorboard', # logging for TensorBoard
+            logging_dir=args.logging_dir, # logging for TensorBoard
             logging_strategy=args.logging_strategy,
             evaluation_strategy=args.evaluation_strategy,
             save_strategy=args.save_strategy,
