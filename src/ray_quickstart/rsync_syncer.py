@@ -3,7 +3,7 @@ import sys
 
 from ray import logger
 
-from util.platform import expand_user_home_path
+from ray_quickstart.util.platform import expand_user_home_path
 
 
 class RsyncSyncer:

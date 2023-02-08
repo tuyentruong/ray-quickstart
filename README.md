@@ -59,28 +59,52 @@ to adapt for other distros.
 
 1. Create a YAML configuration file named `ray_config.yaml` in your project. The file should contain the following
    information:
+   
+   ```yaml
+   driver:
+     user: 'tuyen' # Your username on your local computer
+     private_key_file: '~/.ssh/id_rsa' # The private key file that will be used to connect to the remote computer
+   
+   ray_head:
+     hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
+     client_server_port: 10001 # The port that will be used to communicate with the Ray cluster
+   
+   worker:
+     user: 'tuyen' # The user that will be used to connect to the remote computer using SSH
+     hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
+     ssh_port: 22 # The port that will be used to connect to the remote computer using SSH
+     platform: 'linux' # The platform that the remote computer is running on (used for path conversion)
+   ```
+   
+2. Create a bash script file called `configure_ray_runtime_env.sh` and put it in the `scripts` directory of your project.
+   The script will be run on the Ray worker working directory on the remote computer to configure the runtime environment
+   before running your code to perform training/tuning. The script should install your project's dependencies. Here is 
+   the script that I use for my example project (which is configured to use conda and pipenv):
 
-```yaml
-driver:
-  user: 'tuyen' # Your username on your local computer
-  private_key_file: '~/.ssh/id_rsa' # The private key file that will be used to connect to the remote computer
+    ```bash
+    #!/bin/bash
+    
+    source ~/anaconda3/etc/profile.d/conda.sh
+    conda activate ray-quickstart
+    pipenv install --skip-lock
+    ```
 
-ray_head:
-  hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
-  client_server_port: 10001 # The port that will be used to communicate with the Ray cluster
+3. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
+   The call will return a syncer object:
+   
+   ```
+   syncer = initialize_ray_with_syncer('~/git/ray-quickstart',
+                                       '~/git/ray-quickstart/src',
+                                       '~/git/ray-quickstart/config/ray_config.yaml',
+                                       '~/ray-results')
+   ```
 
-worker:
-  user: 'tuyen' # The user that will be used to connect to the remote computer using SSH
-  hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
-  ssh_port: 22 # The port that will be used to connect to the remote computer using SSH
-  platform: 'linux' # The platform that the remote computer is running on (used for path conversion)
-```
+4. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
+   to train your model. The syncer object will be used to sync your checkpoints back to your local computer after training:
 
-2. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
-   The call will return a syncer object.
-
-3. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
-   to train your model. The syncer object will be used to sync your checkpoints back to your local computer after training.
+   ```
+   trainer.fit(syncer)
+   ```
 
 
 ## Troubleshooting
@@ -95,6 +119,13 @@ issue:
 It started working when I started the Ubuntu WSL instance from the command line and passed in the `--user` flag with the same username as 
 my Windows's username. It is recommended that you start the Ubuntu WSL instance using the `scripts\ubuntu_start.bat` script
 to avoid this issue.
+
+**I get an OOM (out-of-memory) error when I try to train my model on the remote computer. How can I fix this?**
+
+Unfortunately, the GPT2 model is really large and requires a lot of memory. If you don't have enough GPU memory, you can 
+add `no_cuda=True` to the `TrainingArguments` object created in `huggingface_trainer_initializer_base.py.trainer_init_per_worker`
+to try training with the CPU. You can also edit `gpt2_dataset.py` and modify the `get_num_examples()` method to return a 
+small number like 100 so that you can see the complete training process.
 
 
 ## Future Directions

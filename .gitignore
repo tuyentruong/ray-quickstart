@@ -3,6 +3,10 @@
 
 *.pyc
 
+logs/
+models/
+runs/
+
 # Python packaging
 build/
 dist/

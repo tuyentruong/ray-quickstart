@@ -56,7 +56,7 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
         result_grid = tuner.fit()
         assert len(result_grid) == 1
         if syncer is not None:
-            syncer.sync_checkpoints_back_to_driver()
+            syncer.sync_from_ray_worker_to_driver()
         try:
             result = result_grid[0]
             if result.error:

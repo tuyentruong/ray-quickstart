@@ -26,7 +26,9 @@ def initialize_ray_with_syncer(base_dir,
     :param base_dir: The base directory of your project.
     :param src_dir: The base directory for your Python source code
     :param ray_config_file_path: The path to the Ray config file.
-    :param trial_results_dir The directory where the Ray trial results are stored.
+    :param trial_results_dir The directory where the Ray trial results are stored. This directory needs to have the same
+           path on your local computer and at the remote computer. If the directory is in your user home directory, we
+           will do the platform-dependent path expansion for you.
     :param success_callback: Callback to call when Ray is successfully initialized.
     :param clean_trial_results_dir_at_start: Whether to clean the trial results directory on your local computer and the remote computer at the start of the experiment.
     :return: an RsyncSyncer object that needs to be called after training to sync the checkpoints from the remote computer to the local computer.
@@ -50,13 +52,13 @@ def initialize_ray_with_syncer(base_dir,
     monkey_patch_base_trainer_to_enable_syncing_after_training()
     try:
         if clean_trial_results_dir_at_start:
-            clean_trial_results_dir(syncer)
+            clean_trial_results_dir(syncer, trial_results_dir)
         configure_remote_ray_runtime_environment(base_dir,
                                                  driver_private_key_file,
                                                  worker_user,
                                                  worker_hostname_or_ip_address,
                                                  worker_ssh_port,
-                                                 '~/git/ray-quickstart')
+                                                 worker_platform)
         initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
         return syncer
     except ConnectionError:
@@ -109,8 +111,9 @@ def configure_remote_ray_runtime_environment(base_dir,
                                              worker_user,
                                              worker_hostname_or_ip_address,
                                              worker_ssh_port,
-                                             worker_base_dir):
-    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --include="configure_ray_runtime_env.sh" --exclude="*" {{{base_dir}/,{base_dir}/config/}} {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
+                                             worker_platform):
+    worker_base_dir = expand_user_home_path(base_dir, worker_user, worker_platform)
+    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --include="configure_ray_runtime_env.sh" --exclude="*" {{{base_dir}/,{base_dir}/scripts/}} {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
     logger.info(f'copying runtime environment configuration files to remote Ray runtime: {sync_cmd}')
     try:
         output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')

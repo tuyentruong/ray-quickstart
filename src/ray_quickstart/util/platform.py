@@ -9,7 +9,6 @@ import torch
 
 def get_device_type():
     """returns the device type as a string"""
-    #return 'cpu'
     # noinspection PyUnresolvedReferences
     if torch.cuda.is_available():
         return 'cuda'
@@ -40,10 +39,27 @@ def is_windows():
 
 
 def expand_user_home_path(path, user, platform):
-    if platform == 'darwin':
-        path = path.replace('~/', f'/Users/{user}/')
-    elif platform == 'windows':
-        path = path.replace('~/', f'C:/Users/{user}/')
+    if path.startswith('~'):
+        if platform == 'darwin':
+            path = path.replace('~/', f'/Users/{user}/')
+        elif platform == 'windows':
+            path = path.replace('~/', f'C:/Users/{user}/')
+        else:
+            path = path.replace('~/', f'/home/{user}/')
     else:
-        path = path.replace('~/', f'/home/{user}/')
+        if platform == 'darwin':
+            if path.startswith('/home/'):
+                path = path.replace('/home/', '/Users/')
+            elif path.startswith('C:/Users/'):
+                path = path.replace('C:/Users/', '/Users/')
+        elif platform == 'windows':
+            if path.startswith('/Users/'):
+                path = path.replace('/Users/', 'C:/Users/')
+            elif path.startswith('/home/'):
+                path = path.replace('/home/', 'C:/Users/')
+        else:
+            if path.startswith('/Users/'):
+                path = path.replace('/Users/', '/home/')
+            elif path.startswith('C:/Users/'):
+                path = path.replace('C:/Users/', '/home/')
     return path

@@ -1,0 +1,13 @@
+driver:
+  user: 'tuyen'
+  private_key_file: '~/.ssh/id_rsa'
+
+ray_head:
+  hostname_or_ip_address: '192.168.2.4'
+  client_server_port: 10001
+
+worker:
+  user: 'tuyen'
+  hostname_or_ip_address: '192.168.2.4'
+  ssh_port: 22
+  platform: 'linux'

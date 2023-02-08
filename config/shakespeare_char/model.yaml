@@ -1,0 +1,8 @@
+vocab_size: 65
+block_size: 256
+n_layer: 6
+n_head: 6
+n_embd: 384
+attn_pdrop: 0.2
+embd_pdrop: 0.2
+resid_pdrop: 0.2

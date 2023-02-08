@@ -1,11 +1,11 @@
-[[source]]
-url = "https://pypi.org/simple"
-verify_ssl = true
-name = "pypi"
-
 [packages]
-ray = {extras = ["default"], version = "*"}
+numpy = "*"
+pandas = "*"
 torch = "*"
+ray = {extras = ["default"], version = "*"}
+tabulate = "*"
+transformers = "*"
+datasets = "*"
 
 [dev-packages]
 
