@@ -8,7 +8,7 @@ from config import BASE_DIR, CONFIG_DIR, SRC_DIR
 from data.dataset_util import split_dataset_random
 from log import log
 from ray_quickstart import initialize_ray_with_syncer
-from ray_quickstart.init import initialize_ray
+from ray_quickstart import initialize_ray
 from ray_quickstart.util.platform import get_cpu_device_count
 
 

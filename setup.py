@@ -30,6 +30,7 @@ class IncrementVersionCommand(Command):
             version = '.'.join([major, minor, patch])
             print(f'incremented version to {version}')
             content = content.replace(original_version, version)
+            self.distribution.metadata.version = version
         with open(version_file_path, 'w') as f:
             f.write(content)
 
