@@ -23,7 +23,7 @@ cd ~/git/ray-quickstart
 ~/anaconda3/bin/conda create -n ray-quickstart python=3.9.12 -y
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ray-quickstart
-~/anaconda3/bin/conda install pipenv -y
+~/anaconda3/bin/conda install pipenv ray-default -y
 
 # add autoenv
 curl -#fLo- 'https://raw.githubusercontent.com/hyperupcall/autoenv/master/scripts/install.sh' | sh -s -- -y
@@ -39,7 +39,9 @@ sudo apt install libx11-dev libatlas-base-dev -y
 sudo apt install libgtk-3-dev libboost-python-dev -y
 
 # install Python packages for ML/AI
-pipenv install --python="/home/$USER/anaconda3/envs/ray-quickstart/bin/python" --site-packages
+pipenv install --python="/home/$USER/anaconda3/envs/ray-quickstart/bin/python" --site-packages --skip-lock
+pipenv install torch torchvision --skip-lock
+pipenv lock
 
 # install CUDA
 cd ~

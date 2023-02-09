@@ -9,6 +9,24 @@ from setuptools import Command, setup
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
+class DependencyInstallCommand(Command):
+    """Performs a clean installation of package dependencies using Pipenv."""
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system('pipenv --rm')
+        os.system('pipenv --clear')
+        os.system('pipenv install --skip-lock')
+        os.system('pipenv install torch torchvision --skip-lock')
+        os.system('pipenv lock')
+
+
 class IncrementVersionCommand(Command):
     """Increment the version number for the package."""
     user_options = []
@@ -85,6 +103,7 @@ class ReleaseCommand(Command):
 if __name__ == "__main__":
     setup(
         cmdclass={
+            'dep': DependencyInstallCommand,
             'clean': CleanCommand,
             'increment_version': IncrementVersionCommand,
             'publish': PublishCommand,

@@ -4,16 +4,18 @@ verify_ssl = true
 name = "pypi"
 
 [[source]]
-url = "https://download.pytorch.org/whl/nightly/cu116"
+url = "https://download.pytorch.org/whl/nightly/cu118"
 verify_ssl = true
-name = "downloadpytorch"
+name = "pytorch"
 
 [packages]
+torch = {version = ">=1.9", index = "pytorch"}
+torchvision = {version = ">=0.14", index = "pytorch"}
 numpy = "*"
 pandas = "*"
-torch = {version = "*", index = "downloadpytorch"}
-ray = {extras = ["default"], version = "*"}
+scipy= "*"
 tabulate = "*"
+ray = "*"
 transformers = "*"
 datasets = "*"
 
