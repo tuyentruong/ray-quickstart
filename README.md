@@ -74,6 +74,7 @@ to adapt for other distros.
      hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
      ssh_port: 22 # The port that will be used to connect to the remote computer using SSH
      platform: 'linux' # The platform that the remote computer is running on (used for path conversion)
+     base_dir: '~/git/ray-quickstart' # The base directory where ray was installed and the ray cluster was started on the remote computer
      setup_commands: # The commands that will be run on the remote computer to set up the runtime environment
        - source ~/anaconda3/etc/profile.d/conda.sh
        - conda activate ray-quickstart

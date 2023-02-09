@@ -12,7 +12,7 @@ description='Wrapper around the Ray library to make it easier for you to set up 
 readme = 'README.md'
 requires-python = '>=3.7'
 dependencies = [
-    'torch', 'ray[default]',
+    'ray',
 ]
 classifiers = [
     'Development Status :: 3 - Alpha',
@@ -39,4 +39,4 @@ version = {attr = "ray_quickstart.__version__"}
 
 [tool.setuptools.packages.find]
 where = ['src']
-
+include = ['ray_quickstart*']

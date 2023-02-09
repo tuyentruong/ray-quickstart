@@ -11,3 +11,9 @@ worker:
   hostname_or_ip_address: '192.168.2.4'
   ssh_port: 22
   platform: 'linux'
+  base_dir: '~/git/ray-quickstart'
+  setup_commands:
+    - source ~/anaconda3/etc/profile.d/conda.sh
+    - conda activate ray-quickstart
+    - pipenv install --skip-lock
+

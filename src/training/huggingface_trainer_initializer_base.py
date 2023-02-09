@@ -9,6 +9,7 @@ from transformers import Trainer, TrainingArguments, WEIGHTS_NAME
 from config import RUNS_DIR
 from log import LOGS_DIR, log
 from ray_quickstart.util import platform
+from ray_quickstart.util.platform import normalize_home_path_for_platform
 from training.trainer_initializer_base import TrainerInitializerBase
 
 
@@ -71,14 +72,14 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             seed=args.seed,
             data_seed=args.seed,
             remove_unused_columns=args.remove_unused_columns,
-            output_dir=args.output_dir,
+            output_dir=normalize_home_path_for_platform(args.output_dir, None, None),
             overwrite_output_dir=args.overwrite_output_dir,
             learning_rate=args.learning_rate,
             per_device_train_batch_size=args.per_device_train_batch_size,
             per_device_eval_batch_size=args.per_device_eval_batch_size,
             num_train_epochs=args.num_train_epochs,
             weight_decay=args.weight_decay,
-            logging_dir=args.logging_dir, # logging for TensorBoard
+            logging_dir=normalize_home_path_for_platform(args.logging_dir, None, None), # logging for TensorBoard
             logging_strategy=args.logging_strategy,
             evaluation_strategy=args.evaluation_strategy,
             save_strategy=args.save_strategy,

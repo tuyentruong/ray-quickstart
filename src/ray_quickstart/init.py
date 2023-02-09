@@ -13,7 +13,7 @@ from ray_quickstart.monkey_patch import monkey_patch_base_trainer_to_enable_sync
     monkey_patch_trainable_util_to_fix_checkpoint_paths
 from ray_quickstart.rsync_syncer import RsyncSyncer
 from ray_quickstart.util import platform
-from ray_quickstart.util.platform import expand_user_home_path
+from ray_quickstart.util.platform import normalize_home_path_for_platform
 
 
 def initialize_ray_with_syncer(base_dir,
@@ -40,6 +40,7 @@ def initialize_ray_with_syncer(base_dir,
     worker_hostname_or_ip_address = ray_config['worker']['hostname_or_ip_address']
     worker_ssh_port = ray_config['worker']['ssh_port']
     worker_platform = ray_config['worker']['platform']
+    worker_base_dir = 'base_dir' in ray_config['worker'] and ray_config['worker']['base_dir'] or base_dir
     worker_setup_commands = ray_config['worker']['setup_commands']
     syncer = RsyncSyncer(driver_user,
                          driver_private_key_file,
@@ -60,6 +61,7 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_hostname_or_ip_address,
                                                  worker_ssh_port,
                                                  worker_platform,
+                                                 worker_base_dir,
                                                  worker_setup_commands)
         initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
         return syncer
@@ -114,8 +116,9 @@ def configure_remote_ray_runtime_environment(base_dir,
                                              worker_hostname_or_ip_address,
                                              worker_ssh_port,
                                              worker_platform,
+                                             worker_base_dir,
                                              worker_setup_commands):
-    worker_base_dir = expand_user_home_path(base_dir, worker_user, worker_platform)
+    worker_base_dir = normalize_home_path_for_platform(worker_base_dir, worker_user, worker_platform)
     sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --exclude="*" {base_dir}/ {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
     logger.info(f'copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}"')
     try:
@@ -125,6 +128,7 @@ def configure_remote_ray_runtime_environment(base_dir,
         logger.error(f'error copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}": {e}')
 
     if worker_setup_commands is not None and len(worker_setup_commands) > 0:
+        worker_setup_commands.insert(0, f'cd {worker_base_dir}')
         setup_commands = ' && '.join(worker_setup_commands)
         logger.info('configuring remote Ray runtime environment...')
         configure_cmd = f'ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port} {worker_user}@{worker_hostname_or_ip_address} "{setup_commands}"'

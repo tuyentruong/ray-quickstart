@@ -4,27 +4,6 @@ Convenience function for getting info about the current OS platform
 import os
 import sys
 
-import torch
-
-
-def get_device_type():
-    """returns the device type as a string"""
-    # noinspection PyUnresolvedReferences
-    if torch.cuda.is_available():
-        return 'cuda'
-    elif torch.backends.mps.is_available():
-        return 'mps'
-    else:
-        return 'cpu'
-
-
-def get_cuda_device_count():
-    return torch.cuda.device_count()
-
-
-def get_cpu_device_count():
-    return os.cpu_count()
-
 
 def is_linux():
     return sys.platform == 'linux' or sys.platform == 'linux2'
@@ -38,8 +17,12 @@ def is_windows():
     return sys.platform == 'win32'
 
 
-def expand_user_home_path(path, user, platform):
+def normalize_home_path_for_platform(path, user, platform):
     if path.startswith('~'):
+        if user is None:
+            user = os.environ.get('USER')
+        if platform is None:
+            platform = sys.platform
         if platform == 'darwin':
             path = path.replace('~/', f'/Users/{user}/')
         elif platform == 'windows':

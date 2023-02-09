@@ -14,19 +14,6 @@ twine upload dist/*
 python setup.py clean
 
 
-# Package and Distribute Using Hatch
-
-## Build the package
-cd ~/git/ray-quickstart
-hatch build
-
-## Publish to test.pypi.org
-hatch publish -r test
-
-## Publish to pypi.org
-hatch publish
-
-
 # Installation
 
 # Install from test.pypi.org
