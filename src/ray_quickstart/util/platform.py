@@ -18,16 +18,16 @@ def is_windows():
 
 
 def normalize_home_path_for_platform(path, user, platform):
+    if platform is None:
+        platform = sys.platform
     if path.startswith('~'):
         if user is None:
             user = os.environ.get('USER')
-        if platform is None:
-            platform = sys.platform
         if platform == 'darwin':
             path = path.replace('~/', f'/Users/{user}/')
         elif platform == 'windows':
             path = path.replace('~/', f'C:/Users/{user}/')
-        else:
+        elif platform == 'linux':
             path = path.replace('~/', f'/home/{user}/')
     else:
         if platform == 'darwin':
@@ -40,7 +40,7 @@ def normalize_home_path_for_platform(path, user, platform):
                 path = path.replace('/Users/', 'C:/Users/')
             elif path.startswith('/home/'):
                 path = path.replace('/home/', 'C:/Users/')
-        else:
+        elif platform == 'linux':
             if path.startswith('/Users/'):
                 path = path.replace('/Users/', '/home/')
             elif path.startswith('C:/Users/'):
