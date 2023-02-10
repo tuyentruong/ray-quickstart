@@ -39,6 +39,7 @@ sudo apt install libx11-dev libatlas-base-dev -y
 sudo apt install libgtk-3-dev libboost-python-dev -y
 
 # install Python packages for ML/AI
+sudo apt install python3-pycuda -y
 pipenv install --python="/home/$USER/anaconda3/envs/ray-quickstart/bin/python" --site-packages --skip-lock
 pipenv install torch torchvision --skip-lock
 pipenv lock

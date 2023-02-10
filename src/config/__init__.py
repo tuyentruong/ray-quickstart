@@ -3,7 +3,7 @@ import pathlib
 import numpy as np
 import torch
 
-from ray_quickstart.init import platform
+from util import platform
 
 BASE_DIR = str(pathlib.Path(__file__).parents[2]).replace('\\' , '/')
 CONFIG_DIR = BASE_DIR + '/config'
