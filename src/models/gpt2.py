@@ -54,7 +54,7 @@ class GPT2(ModelBase):
                                        return_tensors=return_tensors).data
         if return_tensors == 'pt':
             for key in encoded_input:
-                encoded_input[key] = encoded_input[key].to(self.get_device_type())
+                encoded_input[key] = encoded_input[key].to(self.get_device())
         return encoded_input
 
     def forward(

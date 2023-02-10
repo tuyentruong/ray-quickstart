@@ -26,7 +26,7 @@ class ModelBase(Module):
         self.training_validation_accuracy = None
         self.models_dir_override = None # set to load model from checkpoint
 
-    def get_device_type(self):
+    def get_device(self):
         return self.get_model().device
 
     def is_persistent_model(self):
@@ -71,7 +71,7 @@ class ModelBase(Module):
             log.info(f'creating {self.model_name} model')
             self.model = self._do_create_model(model_config)
         if self.is_inference_mode:
-            self.to(torch.device(config.device_type))
+            self.to(config.device_type)
         return self.model
 
     def load_from_checkpoint(self, checkpoint_dir):
@@ -127,7 +127,7 @@ class ModelBase(Module):
             self.model.save(self.get_model_path())
 
     def to(self, device_type):
-        if self.get_device_type() != device_type:
+        if self.get_device().type != device_type:
             log.info(f'converting {self.model_name} model to device {device_type}')
             self.model.to(device_type)
         return self
@@ -152,6 +152,7 @@ class ModelBase(Module):
             return f'{self.storage_manager.get_config_dir()}/{self.model_name}/train.yaml'
 
     def set_train_mode(self):
+        self.to(config.device_type)
         self.get_model().train()
 
     @abstractmethod
@@ -197,6 +198,7 @@ class ModelBase(Module):
         raise NotImplementedError('need to implement do_update_model()')
 
     def set_eval_mode(self):
+        self.to(config.device_type)
         self.get_model().eval()
 
     @abstractmethod
