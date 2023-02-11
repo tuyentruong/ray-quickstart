@@ -2,6 +2,7 @@
 import ast
 import os
 import re
+import sys
 
 from setuptools import Command, setup
 
@@ -9,8 +10,8 @@ from setuptools import Command, setup
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-class DependencyInstallCommand(Command):
-    """Performs a clean installation of package dependencies using Pipenv."""
+class InstallCommand(Command):
+    """Performs a clean installation of environment and package dependencies."""
     user_options = []
 
     def initialize_options(self):
@@ -20,11 +21,20 @@ class DependencyInstallCommand(Command):
         pass
 
     def run(self):
-        os.system('pipenv --rm')
-        os.system('pipenv --clear')
-        os.system('pipenv install --skip-lock')
-        os.system('pipenv install torch torchvision --skip-lock')
-        os.system('pipenv lock')
+        os.system('conda run -n ray-quickstart pipenv --rm')
+        os.system('conda env remove -n ray-quickstart -y')
+        if sys.platform == 'darwin':
+            os.system('conda env create -n ray-quickstart --file environment.mac.yaml')
+        else:
+            os.system('conda env create -n ray-quickstart --file environment.yaml')
+        if sys.platform == 'win32':
+            output = os.popen('conda run where python.exe').read()
+            python_path = output.splitlines()[0].strip()
+            os.system(f'conda run -n ray-quickstart pipenv install --python="{python_path}" --site-packages --skip-lock')
+        else:
+            os.system('conda run -n ray-quickstart pipenv install --python="$(which python)" --site-packages --skip-lock')
+        os.system('conda run -n ray-quickstart pipenv install torch torchvision --skip-lock')
+        os.system('conda run -n ray-quickstart pipenv lock')
 
 
 class IncrementVersionCommand(Command):
@@ -103,7 +113,7 @@ class ReleaseCommand(Command):
 if __name__ == "__main__":
     setup(
         cmdclass={
-            'dep': DependencyInstallCommand,
+            'install': InstallCommand,
             'clean': CleanCommand,
             'increment_version': IncrementVersionCommand,
             'publish': PublishCommand,

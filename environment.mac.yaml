@@ -1,0 +1,16 @@
+name: ray-quickstart
+channels:
+  - defaults
+  - conda-forge
+  - apple
+dependencies:
+  - python==3.9.12
+  - pip
+  - pipenv
+  - grpcio=1.43.0 # install conda version to get version of grpc so that Ray works on Macs
+  - apple::tensorflow-deps
+  - twine
+  - pip:
+      - ray[default]
+variables:
+  PIPENV_PIPFILE: Pipfile.mac

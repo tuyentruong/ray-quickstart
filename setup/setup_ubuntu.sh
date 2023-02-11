@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # install Python
 set -x
 
@@ -11,19 +12,19 @@ rm ~/anaconda.sh
 ~/anaconda3/bin/conda update -n base -c defaults conda -y
 
 ~/anaconda3/bin/conda init bash
-~/anaconda3/bin/conda config --set auto_activate_base  false
+~/anaconda3/bin/conda config --set auto_activate_base false
 
-# clone repos
+# clone ray-quickstart repo and set up environment and dependencies
 mkdir -p ~/git
 cd ~/git
 ssh-keyscan github.com > ~/.ssh/known_hosts
 git clone https://github.com/tuyentruong/ray-quickstart.git ~/git/ray-quickstart
 
 cd ~/git/ray-quickstart
-~/anaconda3/bin/conda create -n ray-quickstart python=3.9.12 -y
+python3 setup.py install
+
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ray-quickstart
-~/anaconda3/bin/conda install pipenv ray-default -y
 
 # add autoenv
 curl -#fLo- 'https://raw.githubusercontent.com/hyperupcall/autoenv/master/scripts/install.sh' | sh -s -- -y

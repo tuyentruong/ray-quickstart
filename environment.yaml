@@ -1,0 +1,9 @@
+name: ray-quickstart
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python==3.9.12
+  - pipenv
+  - ray-default
+  - twine

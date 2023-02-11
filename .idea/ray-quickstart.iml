@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/logs" />
     </content>
-    <orderEntry type="jdk" jdkName="Pipenv (ray-quickstart)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (ray-quickstart-kKvqTKAM)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
