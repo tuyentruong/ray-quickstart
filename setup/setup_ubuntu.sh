@@ -21,7 +21,7 @@ ssh-keyscan github.com > ~/.ssh/known_hosts
 git clone https://github.com/tuyentruong/ray-quickstart.git ~/git/ray-quickstart
 
 cd ~/git/ray-quickstart
-python3 setup.py install
+python3 setup.py install_env
 
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ray-quickstart

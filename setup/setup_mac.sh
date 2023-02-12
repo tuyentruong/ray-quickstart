@@ -7,7 +7,7 @@ conda init bash
 conda config --set auto_activate_base false
 
 cd ~/git/ray-quickstart
-python3 setup.py install
+python3 setup.py install_env
 
 source /opt/homebrew/Caskroom/miniconda/base/etc/profile.d/conda.sh
 conda activate ray-quickstart

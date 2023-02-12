@@ -10,7 +10,7 @@ from setuptools import Command, setup
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-class InstallCommand(Command):
+class InstallEnvCommand(Command):
     """Performs a clean installation of environment and package dependencies."""
     user_options = []
 
@@ -113,7 +113,7 @@ class ReleaseCommand(Command):
 if __name__ == "__main__":
     setup(
         cmdclass={
-            'install': InstallCommand,
+            'install_env': InstallEnvCommand,
             'clean': CleanCommand,
             'increment_version': IncrementVersionCommand,
             'publish': PublishCommand,
