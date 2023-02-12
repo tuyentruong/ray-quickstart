@@ -62,7 +62,7 @@ class ModelBase(Module):
             return
         model_config = self.get_model_config()
         if self.is_persistent_model and self.use_trained_model:
-            if os.path.exists(self.get_model_path() + (not self.get_save_model_in_folder() and '.p' or '')):
+            if os.path.exists(self.get_model_path() + (not self.get_save_model_in_folder() and '.bin' or '')):
                 log.info(f'loading model from {self.get_model_path()}')
                 self.model = self._do_load_model(model_config)
             else:
