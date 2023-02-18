@@ -46,10 +46,6 @@ Once the Ubuntu instance has been set up, you will need to start it. It is recom
 using the `scripts\ubuntu_start.bat` script. The script will ensure that port forwarding has been set up correctly so
 that you will be able to communicate with the Ray cluster on the Ubuntu instance from your local computer.
 
-Finally, you will need to add your public SSH key to ~/.ssh/authorized_keys on your Ubuntu instance so that your local
-computer will be able to connect to the Ubuntu instance to configure your runtime environment and sync the checkpoints
-using rsync.
-
 If your GPU-enabled computer has Linux installed, you can take a look at `setup\setup_ubuntu.sh` for the setup that needs
 to be done to install and configure Ray cluster. The setup script was written for Ubuntu, but hopefully it will be easy 
 to adapt for other distros.
@@ -57,13 +53,22 @@ to adapt for other distros.
 
 ## Setting Up Your Local Computer
 
-1. Create a YAML configuration file named `ray_config.yaml` in your project. The file should contain the following
+1. Copy ~/.ssh/id_rsa_ubuntu from the Ubuntu instance to your local computer. The SSH key will be used by your local
+   computer to connect to the Ubuntu instance the computer to configure your runtime environment and sync the checkpoints
+   using rsync. Alternatively, you can add the public key for an existing SSH key to ~/.ssh/authorized_keys on your Ubuntu 
+   instance.
+
+2. Finally, you will need to add your public SSH key to ~/.ssh/authorized_keys on your Ubuntu instance so that your local
+   computer will be able to connect to the Ubuntu instance to configure your runtime environment and sync the checkpoints
+   using rsync.
+
+3. Create a YAML configuration file named `ray_config.yaml` in your project. The file should contain the following
    information:
    
    ```yaml
    driver:
      user: 'tuyen' # Your username on your local computer
-     private_key_file: '~/.ssh/id_rsa' # The private key file that will be used to connect to the remote computer
+     private_key_file: '~/.ssh/id_rsa_ubuntu' # The private key file that will be used to connect to the remote computer
    
    ray_head:
      hostname_or_ip_address: '192.168.2.4' # The hostname or IP address of the remote computer
@@ -81,7 +86,7 @@ to adapt for other distros.
        - pipenv install --skip-lock
    ```
    
-2. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
+4. Add a call to `initialize_ray_with_syncer()` to your ML project code to initialize the connection with the Ray cluster.
    The call will return a syncer object:
    
    ```
@@ -91,7 +96,7 @@ to adapt for other distros.
                                        '~/ray-results')
    ```
 
-3. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
+5. Pass the syncer object to the `fit()` call in the subclass of `ray.train.base_trainer.BaseTrainer` that you are using 
    to train your model. The syncer object will be used to sync your checkpoints back to your local computer after training:
 
    ```

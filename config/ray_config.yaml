@@ -1,6 +1,6 @@
 driver:
   user: 'tuyen'
-  private_key_file: '~/.ssh/id_rsa'
+  private_key_file: '~/.ssh/id_rsa_ubuntu'
 
 ray_head:
   hostname_or_ip_address: '192.168.2.4'

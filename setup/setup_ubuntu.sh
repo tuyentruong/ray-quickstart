@@ -13,6 +13,7 @@ rm ~/anaconda.sh
 
 ~/anaconda3/bin/conda init bash
 ~/anaconda3/bin/conda config --set auto_activate_base false
+source ~/anaconda3/etc/profile.d/conda.sh
 
 # clone ray-quickstart repo and set up environment and dependencies
 mkdir -p ~/git
@@ -23,14 +24,19 @@ git clone https://github.com/tuyentruong/ray-quickstart.git ~/git/ray-quickstart
 cd ~/git/ray-quickstart
 python3 setup.py install_env
 
-source ~/anaconda3/etc/profile.d/conda.sh
 conda activate ray-quickstart
 
 # add autoenv
 curl -#fLo- 'https://raw.githubusercontent.com/hyperupcall/autoenv/master/scripts/install.sh' | sh -s -- -y
 
 sudo cp -R ~/git/ray-quickstart/setup/ubuntu/* /
-sudo sed -i "s/USER/$USER/" /etc/systemd/system/ray-cluster.service
+user=$(whoami)
+sudo sed -i 's/USER/'"$user"'/g' /etc/systemd/system/ray-cluster.service
+
+mkdir -p ~/.ssh
+ssh-keygen -t rsa -b 4096 -C "ubuntu" -f ~/.ssh/id_rsa_ubuntu -q -N ""
+cat ~/.ssh/id_rsa_ubuntu.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 
 sudo apt install openssh-server net-tools -y
 

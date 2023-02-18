@@ -119,6 +119,7 @@ def configure_remote_ray_runtime_environment(base_dir,
                                              worker_base_dir,
                                              worker_setup_commands):
     worker_base_dir = normalize_home_path_for_platform(worker_base_dir, worker_user, worker_platform)
+    os.system(f'ssh-keygen -R {worker_hostname_or_ip_address}')
     sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --exclude="*" {base_dir}/ {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
     logger.info(f'copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}"')
     try:
