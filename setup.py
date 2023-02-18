@@ -33,7 +33,6 @@ class InstallEnvCommand(Command):
             os.system(f'conda run -n ray-quickstart pipenv install --python="{python_path}" --site-packages --skip-lock')
         else:
             os.system('conda run -n ray-quickstart pipenv install --python="$(which python)" --site-packages --skip-lock')
-        os.system('conda run -n ray-quickstart pipenv install torch torchvision --skip-lock')
         os.system('conda run -n ray-quickstart pipenv lock')
 
 
