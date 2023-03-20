@@ -53,7 +53,7 @@ if __name__ == '__main__':
     opt = parser.parse_args()
 
     if opt.action is not None:
-        pipeline = [argparse.Action[opt.action]]
+        pipeline = [Action[opt.action]]
     else:
         # DIRECTION: change this to modify the action taken
         pipeline = [Action.TRAIN_MODEL]
