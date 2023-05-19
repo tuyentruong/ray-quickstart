@@ -13,6 +13,7 @@ tabulate = "*"
 ray = "*"
 transformers = "*"
 datasets = "*"
+setuptools = "*"
 
 [dev-packages]
 

@@ -18,8 +18,7 @@ def monkey_patch_cloudpickle_fast():
         except RuntimeError as e:
             if "recursion" in e.args[0]:
                 msg = (
-                    "Could not pickle object as excessively deep recursion "
-                    "required."
+                    "Could not pickle object as excessively deep recursion " "required."
                 )
                 raise pickle.PicklingError(msg) from e
             else:
@@ -31,6 +30,7 @@ def monkey_patch_cloudpickle_fast():
 def monkey_patch_base_trainer_to_enable_syncing_after_training():
     """Monkey-patch ray.train.base_trainer.BaseTrainer so we can't sync the checkpoints before retrieving the grid results so that the checkpoints are available locally."""
 
+    from pathlib import Path
     from ray.train.base_trainer import BaseTrainer
     from ray.air import Result
     from ray.train.base_trainer import TrainingFailedError
@@ -45,24 +45,60 @@ def monkey_patch_base_trainer_to_enable_syncing_after_training():
 
         Raises:
             TrainingFailedError: If any failures during the execution of
-            ``self.as_trainable()``.
+            ``self.as_trainable()``, or during the Tune execution loop.
         """
-        from ray.tune.tuner import Tuner
-        from ray.tune.error import TuneError
+        from ray.tune.tuner import Tuner, TunerInternal
+        from ray.tune import TuneError
 
         trainable = self.as_trainable()
+        param_space = self._extract_fields_for_tuner_param_space()
 
-        tuner = Tuner(trainable=trainable, run_config=self.run_config)
-        result_grid = tuner.fit()
+        if self._restore_path:
+            tuner = Tuner.restore(
+                self._restore_path,
+                trainable=trainable,
+                param_space=param_space,
+                resume_unfinished=True,
+                resume_errored=True,
+            )
+        else:
+            tuner = Tuner(
+                trainable=trainable, param_space=param_space, run_config=self.run_config
+            )
+
+        experiment_path = Path(
+            TunerInternal.setup_create_experiment_checkpoint_dir(
+                trainable, self.run_config
+            )
+        )
+        self._save(experiment_path)
+
+        restore_msg = TrainingFailedError._RESTORE_MSG.format(
+            trainer_cls_name=self.__class__.__name__,
+            path=str(experiment_path),
+        )
+
+        try:
+            result_grid = tuner.fit()
+        except TuneError as e:
+            # Catch any `TuneError`s raised by the `Tuner.fit` call.
+            # Unwrap the `TuneError` if needed.
+            parent_error = e.__cause__ or e
+
+            # Raise it to the user as a `TrainingFailedError` with a message to restore.
+            raise TrainingFailedError(restore_msg) from parent_error
+        # Other exceptions get passed through directly (ex: on `fail_fast='raise'`)
+
         assert len(result_grid) == 1
         if syncer is not None:
             syncer.sync_from_ray_worker_to_driver()
-        try:
-            result = result_grid[0]
-            if result.error:
-                raise result.error
-        except TuneError as e:
-            raise TrainingFailedError from e
+        result = result_grid[0]
+        if result.error:
+            # Raise trainable errors to the user with a message to restore
+            # or configure `FailureConfig` in a new run.
+            raise TrainingFailedError(
+                "\n".join([restore_msg, TrainingFailedError._FAILURE_CONFIG_MSG])
+            ) from result.error
         return result
 
     BaseTrainer.fit = fit
@@ -86,6 +122,7 @@ def monkey_patch_trainable_util_to_fix_checkpoint_paths():
     """Monkey-patch ray.tune.trainable.util.TrainableUtil to fix the checkpoint path in the home directory so the path is correct when transferred from the Ray worker to the driver"""
     from ray.tune.trainable.util import TrainableUtil
 
+    @staticmethod
     def find_checkpoint_dir(checkpoint_path):
         """Returns the directory containing the checkpoint path.
 

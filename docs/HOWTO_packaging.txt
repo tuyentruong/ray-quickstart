@@ -1,6 +1,10 @@
 # Package and Distribute Using Setuptools
 
-## Build the package
+## Build the package for Python 3.9
+cd ~/git/ray-quickstart
+python setup.py sdist bdist_wheel
+
+## Build the package for Python 3.10+
 cd ~/git/ray-quickstart
 python -m build
 
@@ -22,6 +26,6 @@ pipenv install -i https://test.pypi.org/simple/ ray-quickstart
 # Install from pypi.org
 pipenv install ray-quickstart
 
-# Install locally (no build:
+# Install locally (no build):
 pipenv install ~/git/ray-quickstart --skip-lock
 
