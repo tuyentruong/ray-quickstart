@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [[source]]
-url = "https://download.pytorch.org/whl/nightly/cu118"
+url = "https://download.pytorch.org/whl/cu118"
 verify_ssl = true
 name = "pytorch"
 
@@ -25,4 +25,4 @@ datasets = "*"
 python_version = "3.9.12"
 
 [pipenv]
-allow_prereleases = true
+allow_prereleases = false
