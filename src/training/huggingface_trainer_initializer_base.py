@@ -1,5 +1,4 @@
 from abc import ABC
-
 from ray.air import CheckpointConfig, RunConfig
 from ray.train.huggingface import HuggingFaceTrainer
 from ray.train.torch import TorchConfig
@@ -7,10 +6,10 @@ import torch
 from transformers import Trainer, TrainingArguments, WEIGHTS_NAME
 
 from config import RUNS_DIR
-from log import LOGS_DIR, log
-from ray_quickstart.util import platform
+from log import log, LOGS_DIR
 from ray_quickstart.util.platform import normalize_home_path_for_platform
 from training.trainer_initializer_base import TrainerInitializerBase
+from util import platform
 
 
 class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
@@ -39,9 +38,9 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             use_mps_device=platform.is_mac() and not self.config.get_run_on_ray_cluster() and self.config.device_type == 'mps',
             disable_tqdm=disable_tqdm,
         )
-        train_params = model.load_training_params()
-        if train_params is not None:
-            for key, value in train_params.items():
+        training_args = model.load_training_args()
+        if training_args is not None:
+            for key, value in training_args.items():
                 setattr(args, key, value)
         return args
 
@@ -59,6 +58,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             run_config=RunConfig(name=model.model_name,
                                  local_dir=self.config.trial_results_dir,
                                  checkpoint_config=CheckpointConfig(num_to_keep=3),
+                                 verbose=3,
                                  log_to_file=f'{model.model_name}.log')
         )
         return trainer
@@ -85,7 +85,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             save_strategy=args.save_strategy,
             load_best_model_at_end=args.load_best_model_at_end,
             optim=args.optim,
-            #max_steps=5,
+            #max_steps=1,
             no_cuda=self.config.force_cpu,
             use_mps_device=args.use_mps_device,
             disable_tqdm=args.disable_tqdm,
@@ -107,9 +107,9 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             return
         best_checkpoint_index = None
         best_checkpoint_value = None
-        train_params = model.load_training_params()
-        if train_params is not None and 'metric_for_best_model' in train_params:
-            eval_metric = train_params['metric_for_best_model']
+        training_args = model.load_training_args()
+        if training_args is not None and 'metric_for_best_model' in training_args:
+            eval_metric = training_args['metric_for_best_model']
         else:
             eval_metric = default_eval_metric
         for index, checkpoint_info in enumerate(checkpoints):

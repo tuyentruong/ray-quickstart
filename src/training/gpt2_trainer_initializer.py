@@ -22,7 +22,7 @@ class GPT2TrainerInitializer(HuggingFaceTrainerInitializerBase):
         else:
             return 'text-generation'
 
-    def model_init(self):
+    def do_model_init(self):
         model = GPT2(self.storage_manager, self.model_name, self.get_pipeline_name(), False, False)
         model.load_or_create_model()
         model.set_train_mode()

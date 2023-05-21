@@ -132,24 +132,18 @@ class ModelBase(Module):
             self.model.to(device_type)
         return self
 
-    def load_training_params(self, train_params_name=None):
-        training_params_file_path = self._get_train_params_file_path(train_params_name)
-        if os.path.exists(training_params_file_path):
-            with open(training_params_file_path, 'r') as f:
-                training_params = yaml.load(f, Loader=yaml.FullLoader)
-                return training_params
+    def load_training_args(self, training_args_name=None):
+        training_args_file_path = self._get_training_args_file_path(training_args_name)
+        if os.path.exists(training_args_file_path):
+            with open(training_args_file_path, 'r') as f:
+                training_args = yaml.load(f, Loader=yaml.FullLoader)
+                return training_args
         return None
 
-    def save_training_params(self, training_params, train_params_name=None):
-        training_params_file_path = self._get_train_params_file_path(train_params_name)
-        with open(training_params_file_path, 'w') as f:
-            yaml.dump(training_params, f, default_flow_style=False)
-
-    def _get_train_params_file_path(self, training_params_name=None):
-        if training_params_name is not None:
-            return f'{self.storage_manager.get_config_dir()}/{self.model_name}/train_{training_params_name}.yaml'
-        else:
-            return f'{self.storage_manager.get_config_dir()}/{self.model_name}/train.yaml'
+    def save_training_args(self, training_args, training_args_name=None):
+        training_args_file_path = self._get_training_args_file_path(training_args_name)
+        with open(training_args_file_path, 'w') as f:
+            yaml.dump(training_args, f, default_flow_style=False)
 
     def set_train_mode(self):
         self.to(config.device_type)

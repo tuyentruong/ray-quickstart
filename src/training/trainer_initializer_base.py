@@ -21,8 +21,14 @@ class TrainerInitializerBase(ABC):
     def get_env_vars(self):
         return self.env_vars
 
-    @abstractmethod
     def model_init(self):
+        model = self.do_model_init()
+        model.set_training_mode()
+        model.compile()
+        return model
+
+    @abstractmethod
+    def do_model_init(self):
         raise NotImplementedError('need to implement model_init()')
 
     def get_train_and_eval_datasets(self, model):
@@ -63,6 +69,7 @@ class TrainerInitializerBase(ABC):
 
     @abstractmethod
     def trainer_init_per_worker(self, train_dataset, eval_dataset, **trainer_init_config):
+        """This is called from the remote Ray worker process"""
         raise NotImplementedError('need to implement trainer_init_per_worker()')
 
     @abstractmethod
