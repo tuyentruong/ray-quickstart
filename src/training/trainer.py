@@ -18,9 +18,8 @@ def train(trainer_initializer):
     log.info(f'training {model.model_name} model...')
     train_dataset, eval_dataset = trainer_initializer.get_train_and_eval_datasets(model)
     if trainer_initializer.config.get_run_on_ray_cluster():
-        syncer = initialize_ray_with_syncer(BASE_DIR,
-                                            SRC_DIR,
-                                            f'{CONFIG_DIR}/ray_config.yaml',
+        syncer = initialize_ray_with_syncer(BASE_DIR, SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml',
+                                            trainer_initializer.get_env_vars(),
                                             trainer_initializer.config.trial_results_dir)
         log.info('training using ray cluster...')
         ray_train_dataset = trainer_initializer.convert_to_ray_dataset(train_dataset)
@@ -58,7 +57,7 @@ def train(trainer_initializer):
 
 
 def tune_hyperparameters(trainer_initializer):
-    initialize_ray(SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml')
+    initialize_ray(SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml', trainer_initializer.get_env_vars())
     model = trainer_initializer.model_init()
     evaluation_strategy = 'epoch' # 'no', 'steps', or 'epoch'
     args = trainer_initializer.trainer_args_init(model,

@@ -10,12 +10,16 @@ from data.dataset_util import split_dataset_for_classification
 
 class TrainerInitializerBase(ABC):
 
-    def __init__(self, storage_manager, model, config):
+    def __init__(self, storage_manager, model, config, env_vars):
         super().__init__()
         self.storage_manager = storage_manager
         self.model = model
         self.model_name = model.model_name
         self.config = config
+        self.env_vars = env_vars
+
+    def get_env_vars(self):
+        return self.env_vars
 
     @abstractmethod
     def model_init(self):

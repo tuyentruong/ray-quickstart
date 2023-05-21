@@ -19,6 +19,7 @@ from ray_quickstart.util.platform import normalize_home_path_for_platform
 def initialize_ray_with_syncer(base_dir,
                                src_dir,
                                ray_config_file_path,
+                               env_vars,
                                trial_results_dir,
                                success_callback=None,
                                clean_trial_results_dir_at_start=True):
@@ -63,25 +64,25 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_platform,
                                                  worker_base_dir,
                                                  worker_setup_commands)
-        initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
+        initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows() and os.path.exists(f'{base_dir}/scripts/ray_start.bat'):
             with subprocess.Popen(f'{base_dir}/scripts/ray_start.bat') as p:
                 p.wait()
-            initialize_ray(src_dir, ray_config_file_path, ray_config, success_callback)
+            initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, success_callback)
             return syncer
         else:
             raise
 
 
-def initialize_ray(src_dir, ray_config_file_path, ray_config=None, success_callback=None):
+def initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config=None, success_callback=None):
     if ray.is_initialized():
         return
     if ray_config is None:
         ray_config = load_ray_config(ray_config_file_path)
-    # runtime_env is required for cloudpickle to be able to find modules
-    runtime_env = {'working_dir': src_dir}
+    runtime_env = {'working_dir': src_dir,  # working_dir is required for cloudpickle to be able to find modules
+                   'env_vars' : env_vars}
     ray_head_hostname_or_ip_address = ray_config['ray_head']['hostname_or_ip_address']
     ray_head_client_server_port = ray_config['ray_head']['client_server_port']
     ray.init(address=f'ray://{ray_head_hostname_or_ip_address}:{ray_head_client_server_port}', runtime_env=runtime_env)

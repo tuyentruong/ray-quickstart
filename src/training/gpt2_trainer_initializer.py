@@ -13,8 +13,8 @@ from training.huggingface_trainer_initializer_base import HuggingFaceTrainerInit
 
 class GPT2TrainerInitializer(HuggingFaceTrainerInitializerBase):
 
-    def __init__(self, storage_manager, model):
-        super().__init__(storage_manager, model, config)
+    def __init__(self, storage_manager, model, env_vars):
+        super().__init__(storage_manager, model, config, env_vars)
 
     def get_pipeline_name(self):
         if self.model is not None:
