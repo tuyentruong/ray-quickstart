@@ -31,7 +31,7 @@ class RsyncSyncer:
                                                       self.driver_platform)
         worker_dir = normalize_home_path_for_platform(self.trial_results_dir, self.worker_user,
                                                       self.worker_platform)
-        sync_cmd = f'rsync -avz -e "ssh -i {self.driver_private_key_file} -o StrictHostKeyChecking=no -p {self.worker_ssh_port}" --delete --ignore-errors {driver_dir}/ {self.worker_user}@{self.worker_hostname}:{worker_dir}/'
+        sync_cmd = f'rsync -avz -e "ssh -i {self.driver_private_key_file} -o StrictHostKeyChecking=no -o LogLevel=ERROR -p {self.worker_ssh_port}" --delete --ignore-errors {driver_dir}/ {self.worker_user}@{self.worker_hostname}:{worker_dir}/'
         logger.info(f'syncing from local computer to ray worker: {sync_cmd}')
         try:
             output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')
@@ -45,7 +45,7 @@ class RsyncSyncer:
                                                       self.worker_platform)
         driver_dir = normalize_home_path_for_platform(self.trial_results_dir, self.driver_user,
                                                       self.driver_platform)
-        sync_cmd = f'rsync -avz -e "ssh -i {self.driver_private_key_file} -o StrictHostKeyChecking=no -p {self.worker_ssh_port}" --delete --ignore-errors {self.worker_user}@{self.worker_hostname}:{worker_dir}/ {driver_dir}/'
+        sync_cmd = f'rsync -avz -e "ssh -i {self.driver_private_key_file} -o StrictHostKeyChecking=no -o LogLevel=ERROR -p {self.worker_ssh_port}" --delete --ignore-errors {self.worker_user}@{self.worker_hostname}:{worker_dir}/ {driver_dir}/'
         logger.info(f'syncing from ray worker to local computer: {sync_cmd}')
         try:
             output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')

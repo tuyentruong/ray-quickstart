@@ -1,9 +1,15 @@
 from abc import ABC
+import logging
+import os
+
+import numpy as np
 from ray.air import CheckpointConfig, RunConfig
 from ray.train.huggingface import HuggingFaceTrainer
 from ray.train.torch import TorchConfig
 import torch
-from transformers import Trainer, TrainingArguments, WEIGHTS_NAME
+from transformers import TrainingArguments, WEIGHTS_NAME
+import transformers.trainer
+from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from config import RUNS_DIR
 from log import log, LOGS_DIR
@@ -56,23 +62,23 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
                                  'compute_metrics': self.compute_metrics_init()},
             torch_config=TorchConfig(backend='gloo'),
             run_config=RunConfig(name=model.model_name,
-                                 local_dir=self.config.trial_results_dir,
                                  checkpoint_config=CheckpointConfig(num_to_keep=3),
-                                 verbose=3,
                                  log_to_file=f'{model.model_name}.log')
         )
         return trainer
 
     def trainer_init_per_worker(self, train_dataset, eval_dataset, **trainer_init_config):
+        logging.basicConfig(level=logging.INFO)
         model = 'model' in trainer_init_config and trainer_init_config['model'] or None
         model_init = 'model_init' in trainer_init_config and trainer_init_config['model_init'] or None
         args = trainer_init_config['args']
         # reinitialize the training arguments so that it gets initialized correctly on the worker
+        output_dir = normalize_home_path_for_platform(args.output_dir, None, None)
         args = TrainingArguments(
             seed=args.seed,
             data_seed=args.seed,
             remove_unused_columns=args.remove_unused_columns,
-            output_dir=normalize_home_path_for_platform(args.output_dir, None, None),
+            output_dir=output_dir,
             overwrite_output_dir=args.overwrite_output_dir,
             learning_rate=args.learning_rate,
             per_device_train_batch_size=args.per_device_train_batch_size,
@@ -84,6 +90,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             evaluation_strategy=args.evaluation_strategy,
             save_strategy=args.save_strategy,
             load_best_model_at_end=args.load_best_model_at_end,
+            metric_for_best_model=args.metric_for_best_model,
             optim=args.optim,
             #max_steps=1,
             no_cuda=self.config.force_cpu,
@@ -127,3 +134,42 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         state_dict = torch.load(f'{checkpoint_path}/{WEIGHTS_NAME}', map_location=self.config.device_type)
         model.load_state_dict(state_dict)
         model.save_model()
+
+
+class Trainer(transformers.trainer.Trainer):
+    """Subclass of Trainer that saves the model as a Ray checkpoint (lines 32-33)"""
+
+    def _save_checkpoint(self, model, trial, metrics=None):
+        # Save model checkpoint
+        checkpoint_folder = f"{PREFIX_CHECKPOINT_DIR}-{self.state.global_step}"
+
+        run_dir = self._get_output_dir(trial=trial)
+        output_dir = os.path.join(run_dir, checkpoint_folder)
+        self.save_checkpoint_as_directory(run_dir, checkpoint_folder)
+
+        # Determine the new best metric / best model checkpoint
+        if metrics is not None and self.args.metric_for_best_model is not None:
+            metric_to_check = self.args.metric_for_best_model
+            if not metric_to_check.startswith("eval_"):
+                metric_to_check = f"eval_{metric_to_check}"
+            metric_value = metrics[metric_to_check]
+
+            operator = np.greater if self.args.greater_is_better else np.less
+            if (
+                    self.state.best_metric is None
+                    or self.state.best_model_checkpoint is None
+                    or operator(metric_value, self.state.best_metric)
+            ):
+                self.state.best_metric = metric_value
+                self.state.best_model_checkpoint = output_dir
+
+        # Save the Trainer state
+        if self.args.should_save:
+            self.state.save_to_json(os.path.join(output_dir, transformers.trainer.TRAINER_STATE_NAME))
+            self._rotate_checkpoints(use_mtime=True, output_dir=run_dir)
+
+    def save_checkpoint_as_directory(self, run_dir, checkpoint_folder):
+        checkpoint_dir = f'{run_dir}/{checkpoint_folder}'
+        self.model.set_models_dir(checkpoint_dir)
+        self.model.save_model()
+        self.model.set_models_dir(None)

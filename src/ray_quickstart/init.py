@@ -64,7 +64,7 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_platform,
                                                  worker_base_dir,
                                                  worker_setup_commands)
-        initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, success_callback)
+        initialize_ray(src_dir, env_vars, trial_results_dir, ray_config_file_path, ray_config, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows() and os.path.exists(f'{base_dir}/scripts/ray_start.bat'):
@@ -76,12 +76,13 @@ def initialize_ray_with_syncer(base_dir,
             raise
 
 
-def initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config=None, success_callback=None):
+def initialize_ray(src_dir, env_vars, trial_results_dir, ray_config_file_path, ray_config=None, success_callback=None):
     if ray.is_initialized():
         return
     if ray_config is None:
         ray_config = load_ray_config(ray_config_file_path)
     runtime_env = {'working_dir': src_dir,  # working_dir is required for cloudpickle to be able to find modules
+                   'output_dir': trial_results_dir,
                    'env_vars' : env_vars}
     ray_head_hostname_or_ip_address = ray_config['ray_head']['hostname_or_ip_address']
     ray_head_client_server_port = ray_config['ray_head']['client_server_port']
@@ -120,8 +121,8 @@ def configure_remote_ray_runtime_environment(base_dir,
                                              worker_base_dir,
                                              worker_setup_commands):
     worker_base_dir = normalize_home_path_for_platform(worker_base_dir, worker_user, worker_platform)
-    os.system(f'ssh-keygen -R {worker_hostname_or_ip_address}')
-    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --exclude="*" {base_dir}/ {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
+    os.system(f'ssh-keygen -R {worker_hostname_or_ip_address} 2>/dev/null')
+    sync_cmd = f'rsync -avz -e "ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -o LogLevel=ERROR -p {worker_ssh_port}" --include="Pipfile" --include="requirements.txt" --exclude="*" {base_dir}/ {worker_user}@{worker_hostname_or_ip_address}:{worker_base_dir}/'
     logger.info(f'copying runtime environment configuration files to remote Ray runtime with command "{sync_cmd}"')
     try:
         output = str(subprocess.check_output(sync_cmd, shell=True)).replace('\\n', '\n')
@@ -132,9 +133,8 @@ def configure_remote_ray_runtime_environment(base_dir,
     if worker_setup_commands is not None and len(worker_setup_commands) > 0:
         worker_setup_commands.insert(0, f'cd {worker_base_dir}')
         setup_commands = ' && '.join(worker_setup_commands)
-        logger.info('configuring remote Ray runtime environment...')
-        configure_cmd = f'ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -p {worker_ssh_port} {worker_user}@{worker_hostname_or_ip_address} "{setup_commands}"'
         try:
+            configure_cmd = f'ssh -i {driver_private_key_file} -o StrictHostKeyChecking=no -o LogLevel=ERROR -p {worker_ssh_port} {worker_user}@{worker_hostname_or_ip_address} "{setup_commands}"'
             logger.info(f'configuring remote Ray runtime environment with command "{setup_commands}"')
             output = str(subprocess.check_output(configure_cmd, shell=True)).replace('\\n', '\n')
             logger.info(output)
