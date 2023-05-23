@@ -74,13 +74,14 @@ class ModelBase(Module):
             self.to(config.device_type)
         return self.model
 
-    def load_from_checkpoint(self, checkpoint_dir):
-        log.info(f'loading model from {checkpoint_dir}')
-        self.models_dir_override = checkpoint_dir
-        model_config = self.get_model_config()
-        self.model = self._do_load_model(model_config)
-        self.models_dir_override = None
-        self.save_model()
+    def load_from_checkpoint(self, checkpoint):
+        with checkpoint.as_directory() as checkpoint_path:
+            log.info(f'loading model from {checkpoint_path}')
+            self.models_dir_override = checkpoint_path
+            model_config = self.get_model_config()
+            self.model = self._do_load_model(model_config)
+            self.models_dir_override = None
+            self.save_model()
 
     def get_model_config(self):
         model_config = self._do_create_model_config()

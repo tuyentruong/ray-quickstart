@@ -10,7 +10,6 @@ from transformers import TrainingArguments
 import transformers.trainer
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
-from config import RUNS_DIR
 from log import log, LOGS_DIR
 from ray_quickstart.util.platform import normalize_home_path_for_platform
 from training.trainer_initializer_base import TrainerInitializerBase
@@ -97,7 +96,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         )
         data_collator = trainer_init_config['data_collator']
         compute_metrics = 'compute_metrics' in trainer_init_config and trainer_init_config['compute_metrics'] or None
-        trainer = Trainer(
+        trainer = transformers.Trainer(
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             model=model,
@@ -130,13 +129,12 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         log.info(f'Best checkpoint {eval_metric}: {best_checkpoint_value}')
 
         if best_checkpoint:
-            with best_checkpoint.as_directory() as checkpoint_path:
-                model.load_from_checkpoint(checkpoint_path)
-                model.save_model()
+            model = best_checkpoint.get_model(model)
+            model.save_model()
 
 
 class Trainer(transformers.trainer.Trainer):
-    """Subclass of Trainer that saves the model as a Ray checkpoint (lines 32-33)"""
+    """Subclass of Trainer that saves the allows for saving and restore of custom models if the default checkpoint system is insufficient for some reason."""
 
     def _save_checkpoint(self, model, trial, metrics=None):
         # Save model checkpoint
