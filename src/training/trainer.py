@@ -18,8 +18,10 @@ def train(trainer_initializer):
     log.info(f'training {model.model_name} model...')
     train_dataset, eval_dataset = trainer_initializer.get_train_and_eval_datasets(model)
     if trainer_initializer.config.get_run_on_ray_cluster():
-        syncer = initialize_ray_with_syncer(BASE_DIR, SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml',
+        syncer = initialize_ray_with_syncer(BASE_DIR,
+                                            SRC_DIR,
                                             trainer_initializer.get_env_vars(),
+                                            f'{CONFIG_DIR}/ray_config.yaml',
                                             trainer_initializer.config.trial_results_dir)
         log.info('training using ray cluster...')
         ray_train_dataset = trainer_initializer.convert_to_ray_dataset(train_dataset)
@@ -36,8 +38,7 @@ def train(trainer_initializer):
         if checkpoint is None:
             log.info('no best checkpoint found after training using ray cluster')
         else:
-            trainer_initializer.update_model_with_best_checkpoint(model, result.best_checkpoints,
-                                                                  args.metric_for_best_model)
+            trainer_initializer.update_model_with_best_checkpoint(model, args.metric_for_best_model, )
     else:
         log.info('training using local computer...')
         model.set_train_mode()
@@ -57,7 +58,7 @@ def train(trainer_initializer):
 
 
 def tune_hyperparameters(trainer_initializer):
-    initialize_ray(SRC_DIR, f'{CONFIG_DIR}/ray_config.yaml', trainer_initializer.get_env_vars())
+    initialize_ray(SRC_DIR, trainer_initializer.get_env_vars(), f'{CONFIG_DIR}/ray_config.yaml')
     model = trainer_initializer.model_init()
     evaluation_strategy = 'epoch' # 'no', 'steps', or 'epoch'
     args = trainer_initializer.trainer_args_init(model,
@@ -107,7 +108,7 @@ def tune_hyperparameters(trainer_initializer):
 
 def create_scaling_config():
     use_gpu = True
-    num_trainer_cpus = 4
+    num_trainer_cpus = 1
     if use_gpu:
         num_cpus = 0
         num_gpus = 1

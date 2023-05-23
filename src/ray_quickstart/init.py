@@ -18,8 +18,8 @@ from ray_quickstart.util.platform import normalize_home_path_for_platform
 
 def initialize_ray_with_syncer(base_dir,
                                src_dir,
-                               ray_config_file_path,
                                env_vars,
+                               ray_config_file_path,
                                trial_results_dir,
                                success_callback=None,
                                clean_trial_results_dir_at_start=True):
@@ -64,19 +64,24 @@ def initialize_ray_with_syncer(base_dir,
                                                  worker_platform,
                                                  worker_base_dir,
                                                  worker_setup_commands)
-        initialize_ray(src_dir, env_vars, trial_results_dir, ray_config_file_path, ray_config, success_callback)
+        initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, trial_results_dir, success_callback)
         return syncer
     except ConnectionError:
         if platform.is_windows() and os.path.exists(f'{base_dir}/scripts/ray_start.bat'):
             with subprocess.Popen(f'{base_dir}/scripts/ray_start.bat') as p:
                 p.wait()
-            initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, success_callback)
+            initialize_ray(src_dir, env_vars, ray_config_file_path, ray_config, trial_results_dir, success_callback)
             return syncer
         else:
             raise
 
 
-def initialize_ray(src_dir, env_vars, trial_results_dir, ray_config_file_path, ray_config=None, success_callback=None):
+def initialize_ray(src_dir,
+                   env_vars,
+                   ray_config_file_path,
+                   ray_config=None,
+                   trial_results_dir='~/ray_results',
+                   success_callback=None):
     if ray.is_initialized():
         return
     if ray_config is None:

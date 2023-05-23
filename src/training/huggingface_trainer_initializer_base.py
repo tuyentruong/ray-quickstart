@@ -6,8 +6,7 @@ import numpy as np
 from ray.air import CheckpointConfig, RunConfig
 from ray.train.huggingface import HuggingFaceTrainer
 from ray.train.torch import TorchConfig
-import torch
-from transformers import TrainingArguments, WEIGHTS_NAME
+from transformers import TrainingArguments
 import transformers.trainer
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
@@ -62,7 +61,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
                                  'compute_metrics': self.compute_metrics_init()},
             torch_config=TorchConfig(backend='gloo'),
             run_config=RunConfig(name=model.model_name,
-                                 checkpoint_config=CheckpointConfig(num_to_keep=3),
+                                 checkpoint_config=CheckpointConfig(num_to_keep=None),
                                  log_to_file=f'{model.model_name}.log')
         )
         return trainer
@@ -99,7 +98,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         )
         data_collator = trainer_init_config['data_collator']
         compute_metrics = 'compute_metrics' in trainer_init_config and trainer_init_config['compute_metrics'] or None
-        return Trainer(
+        trainer = Trainer(
             train_dataset=train_dataset,
             eval_dataset=eval_dataset,
             model=model,
@@ -108,6 +107,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             data_collator=data_collator,
             compute_metrics=compute_metrics
         )
+        return trainer
 
     def update_model_with_best_checkpoint(self, model, checkpoints, default_eval_metric):
         if checkpoints is None or len(checkpoints) == 0:
@@ -130,10 +130,10 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
         log.info(f'Best checkpoint metrics: {best_checkpoint_metrics}')
         log.info(f'Best checkpoint {eval_metric}: {best_checkpoint_value}')
 
-        checkpoint_path = best_checkpoint.uri[7:]
-        state_dict = torch.load(f'{checkpoint_path}/{WEIGHTS_NAME}', map_location=self.config.device_type)
-        model.load_state_dict(state_dict)
-        model.save_model()
+        if best_checkpoint:
+            with best_checkpoint.as_directory() as checkpoint_path:
+                model.load_from_checkpoint(checkpoint_path)
+                model.save_model()
 
 
 class Trainer(transformers.trainer.Trainer):
@@ -145,7 +145,7 @@ class Trainer(transformers.trainer.Trainer):
 
         run_dir = self._get_output_dir(trial=trial)
         output_dir = os.path.join(run_dir, checkpoint_folder)
-        self.save_checkpoint_as_directory(run_dir, checkpoint_folder)
+        self.save_checkpoint_as_directory(output_dir)
 
         # Determine the new best metric / best model checkpoint
         if metrics is not None and self.args.metric_for_best_model is not None:
@@ -168,8 +168,7 @@ class Trainer(transformers.trainer.Trainer):
             self.state.save_to_json(os.path.join(output_dir, transformers.trainer.TRAINER_STATE_NAME))
             self._rotate_checkpoints(use_mtime=True, output_dir=run_dir)
 
-    def save_checkpoint_as_directory(self, run_dir, checkpoint_folder):
-        checkpoint_dir = f'{run_dir}/{checkpoint_folder}'
-        self.model.set_models_dir(checkpoint_dir)
+    def save_checkpoint_as_directory(self, output_dir):
+        self.model.set_models_dir(output_dir)
         self.model.save_model()
         self.model.set_models_dir(None)

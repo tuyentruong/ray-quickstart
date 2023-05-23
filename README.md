@@ -90,8 +90,10 @@ to adapt for other distros.
    The call will return a syncer object:
    
    ```
+   env_vars = {}
    syncer = initialize_ray_with_syncer('~/git/ray-quickstart',
                                        '~/git/ray-quickstart/src',
+                                       env_vars,
                                        '~/git/ray-quickstart/config/ray_config.yaml',
                                        '~/ray-results')
    ```
