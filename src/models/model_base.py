@@ -75,6 +75,7 @@ class ModelBase(Module):
         return self.model
 
     def load_from_checkpoint(self, checkpoint_dir):
+        log.info(f'loading model from {checkpoint_dir}')
         self.models_dir_override = checkpoint_dir
         model_config = self.get_model_config()
         self.model = self._do_load_model(model_config)

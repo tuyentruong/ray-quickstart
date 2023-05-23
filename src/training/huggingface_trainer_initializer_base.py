@@ -33,7 +33,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             seed=self.config.seed,
             data_seed=self.config.seed,
             remove_unused_columns=True,
-            output_dir=f'{RUNS_DIR}/{model.model_name}',
+            output_dir='.',
             logging_dir=f'{LOGS_DIR}/tensorboard', # logging for TensorBoard
             logging_strategy=tensorboard_logging_strategy,
             evaluation_strategy=evaluation_strategy,
@@ -61,7 +61,7 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
                                  'compute_metrics': self.compute_metrics_init()},
             torch_config=TorchConfig(backend='gloo'),
             run_config=RunConfig(name=model.model_name,
-                                 checkpoint_config=CheckpointConfig(num_to_keep=None),
+                                 checkpoint_config=CheckpointConfig(num_to_keep=3),
                                  log_to_file=f'{model.model_name}.log')
         )
         return trainer
@@ -78,7 +78,6 @@ class HuggingFaceTrainerInitializerBase(TrainerInitializerBase, ABC):
             data_seed=args.seed,
             remove_unused_columns=args.remove_unused_columns,
             output_dir=output_dir,
-            overwrite_output_dir=args.overwrite_output_dir,
             learning_rate=args.learning_rate,
             per_device_train_batch_size=args.per_device_train_batch_size,
             per_device_eval_batch_size=args.per_device_eval_batch_size,
