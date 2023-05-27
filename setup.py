@@ -27,6 +27,7 @@ class InstallEnvCommand(Command):
             os.system('conda env create -n ray-quickstart --file environment.mac.yaml')
         else:
             os.system('conda env create -n ray-quickstart --file environment.yaml')
+        os.system('conda update openssl -y') # needed to fix "module ‘lib’ has no attribute ‘OpenSSL_add_all_algorithms’" error when running "twine upload dist/*" on Python 3.10
         if sys.platform == 'win32':
             output = os.popen('conda run where python.exe').read()
             python_path = output.splitlines()[0].strip()

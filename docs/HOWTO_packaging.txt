@@ -1,12 +1,7 @@
 # Package and Distribute Using Setuptools
 
-## Build the package for Python 3.9
+## Build the package
 cd ~/git/ray-quickstart
-python setup.py sdist bdist_wheel
-
-## Build the package for Python 3.10+
-cd ~/git/ray-quickstart
-pipenv install build
 python -m build
 
 ## Publish to test.pypi.org
