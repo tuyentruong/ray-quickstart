@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python==3.9.12
+  - python==3.10.11
   - pipenv
   - ray-default
   - twine

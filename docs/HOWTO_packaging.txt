@@ -6,6 +6,7 @@ python setup.py sdist bdist_wheel
 
 ## Build the package for Python 3.10+
 cd ~/git/ray-quickstart
+pipenv install build
 python -m build
 
 ## Publish to test.pypi.org
@@ -28,4 +29,3 @@ pipenv install ray-quickstart
 
 # Install locally (no build):
 pipenv install ~/git/ray-quickstart --skip-lock
-

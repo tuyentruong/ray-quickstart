@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - apple
 dependencies:
-  - python==3.9.12
+  - python==3.10.11
   - pip
   - pipenv
   - grpcio=1.43.0 # install conda version to get version of grpc so that Ray works on Macs
