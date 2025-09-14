@@ -35,9 +35,6 @@ wsl -u root -d Ubuntu-22.04 -- echo "systemd=true" > /etc/wsl.conf
 wsl -u root -d Ubuntu-22.04 -- echo "" > /etc/wsl.conf
 wsl -u root -d Ubuntu-22.04 -- echo "[interop]" > /etc/wsl.conf
 wsl -u root -d Ubuntu-22.04 -- echo "appendWindowsPath = false" > /etc/wsl.conf
-wsl -u root -d Ubuntu-22.04 -- echo "" > /etc/wsl.conf
-wsl -u root -d Ubuntu-22.04 -- echo "[wsl2]" > /etc/wsl.conf
-wsl -u root -d Ubuntu-22.04 -- echo "vmIdleTimeout=-1" > /etc/wsl.conf
 
 cd %~dp0
 wsl -u %USERNAME% ./setup_ubuntu.sh
